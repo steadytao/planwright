@@ -75,6 +75,7 @@
     "Infracost",
     "Kustomize",
     "ldflags",
+    "librsvg",
     "linters",
     "mapfile",
     "magick",
