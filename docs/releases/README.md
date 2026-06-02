@@ -14,6 +14,7 @@ Start each release note from [`template.md`](template.md).
 
 Each release workflow expects a file named after the tag:
 - `v0.11.0` uses `docs/releases/v0.11.0.md`
+- `v0.12.0` uses `docs/releases/v0.12.0.md`
 - release notes are prepared before the tag is pushed
 - release notes do not include a top-level heading because the GitHub release title supplies it
 - the release workflow prepends download badges and release-file guidance before publishing

@@ -19,7 +19,7 @@ The stronger strategic path is to make a smaller core stable first then expand f
 Planwright's pre-v1.0 roadmap is narrowed to the capabilities needed for a credible local-first compatibility and evidence engine.
 
 The pre-v1.0 sequence is:
-- release publication readiness
+- first-release usability and proof
 - golden compatibility fixture suite
 - Terraform/OpenTofu state and provider schema import
 - Terraform/OpenTofu graph lowering for a declared AWS subset

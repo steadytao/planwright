@@ -2,6 +2,7 @@
 
 Planwright documentation is split by purpose. Start with the README for user-facing installation and usage then use these documents for project boundaries, architecture and maintenance details.
 - [../README.md](../README.md), installation, current scope and command overview
+- [../examples/aws-webapp-basic/README.md](../examples/aws-webapp-basic/README.md), canonical AWS web application proof path
 - [compatibility.md](compatibility.md), compatibility levels and current format support
 - [roadmap.md](roadmap.md), version gate sequence and deferred work
 - [architecture/design.md](architecture/design.md), product boundary and engine shape
@@ -18,6 +19,7 @@ Planwright documentation is split by purpose. Start with the README for user-fac
 
 For a quick project review:
 - read [../README.md](../README.md)
+- run or inspect [../examples/aws-webapp-basic/README.md](../examples/aws-webapp-basic/README.md)
 - read [compatibility.md](compatibility.md)
 - read [architecture/threat-model.md](architecture/threat-model.md)
 - read [roadmap.md](roadmap.md)
