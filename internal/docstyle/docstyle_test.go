@@ -69,6 +69,13 @@ func TestCheckMarkdownFlagsAmericanEnglish(t *testing.T) {
 	assertFinding(t, findings, "PW-DOC-EN-GB-001")
 }
 
+func TestCheckMarkdownAllowsShieldsBadgeURLParameters(t *testing.T) {
+	t.Parallel()
+
+	findings := CheckMarkdown("README.md", []byte("[![Scorecard](https://img.shields.io/ossf-scorecard/example/repo?label=Scorecard&style=for-the-badge&labelColor=031835&color=brightgreen)](#)\n"))
+	assertNoFinding(t, findings, "PW-DOC-EN-GB-001")
+}
+
 func TestCheckMarkdownIgnoresFencedCodeBlocks(t *testing.T) {
 	t.Parallel()
 
