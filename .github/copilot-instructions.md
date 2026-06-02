@@ -1,8 +1,8 @@
-# AGENTS.md
+# Copilot Instructions
 
 **Human readers:** this file is primarily for coding agents. It is an agent entry point, not a replacement for the canonical project documents.
 
-This file provides agent-focused instructions for work in Planwright.
+This file provides Copilot-focused instructions for work in Planwright.
 
 ## Mission
 

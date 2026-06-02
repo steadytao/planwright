@@ -27,7 +27,6 @@ jobs:
         with:
           egress-policy: block
           allowed-endpoints: |
-            168.63.129.16:53
             api.github.com:443
             codeload.github.com:443
             github.com:443
@@ -80,7 +79,6 @@ jobs:
           # - actions/setup-python resolving and downloading Python toolcache artifacts
           # - the Go Report Card refresh and report fetches
           allowed-endpoints: |
-            168.63.129.16:53
             api.github.com:443
             codeload.github.com:443
             github.com:443

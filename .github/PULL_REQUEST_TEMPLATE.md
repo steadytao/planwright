@@ -8,7 +8,7 @@ Describe the change clearly and directly.
 
 What problem does this change solve
 
-## Scope
+## Scope <!-- very lenient with the not included section (will commonly not be needed) -->
 
 What is included in this change
 
@@ -22,7 +22,7 @@ Describe the testing performed.
 - Manual validation:
 - Other relevant verification:
 
-## Documentation
+## Documentation <!-- very lenient here you can remove this section entirely if documentation simply isnt needed -->
 
 Describe any documentation changes.
 - Documentation updated:
@@ -55,6 +55,6 @@ If yes, describe the extent of AI assistance and what was personally reviewed an
 ## DCO
 - [ ] I confirm that all commits in this pull request are signed off under the DCO
 
-## Notes for reviewers
+## Notes for reviewers <!-- lenient here you can remove this section entirely if the change requires no further explanation (very common) -->
 
 Anything else reviewers should know

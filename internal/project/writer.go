@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strings"
 
@@ -178,6 +179,9 @@ func rejectSymlinkAncestors(path string) error {
 			return fmt.Errorf("inspect parent %s: %w", ancestor, err)
 		}
 		if info.Mode()&os.ModeSymlink != 0 {
+			if isPlatformPathAlias(ancestor) {
+				continue
+			}
 			return fmt.Errorf("parent %s is a symlink", ancestor)
 		}
 		if !info.IsDir() {
@@ -185,4 +189,13 @@ func rejectSymlinkAncestors(path string) error {
 		}
 	}
 	return nil
+}
+
+func isPlatformPathAlias(path string) bool {
+	if runtime.GOOS != "darwin" {
+		return false
+	}
+
+	clean := filepath.Clean(path)
+	return clean == "/tmp" || clean == "/var"
 }
