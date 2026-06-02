@@ -34,6 +34,8 @@ jobs:
     name: Verify and Tag Release
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    environment:
+      name: release
 
     steps:
       - name: Harden Runner
@@ -73,9 +75,25 @@ jobs:
 
           if [ -z "${RELEASE_TOKEN}" ]; then
             echo "Error: RELEASE_TOKEN is not available to this workflow"
-            echo "Configure it as a repository, organisation or environment secret that this job can access"
+            echo "Configure it as a GitHub Actions secret in the release environment"
             exit 1
           fi
+
+      - name: Create Release Git Askpass Helper
+        run: |
+          set -euo pipefail
+
+          askpass="$RUNNER_TEMP/release-git-askpass.sh"
+          cat > "$askpass" <<'EOF'
+          #!/usr/bin/env sh
+          case "$1" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "${RELEASE_TOKEN:?}" ;;
+            *) exit 1 ;;
+          esac
+          EOF
+          chmod 700 "$askpass"
+          printf 'RELEASE_GIT_ASKPASS=%s\n' "$askpass" >> "$GITHUB_ENV"
 
       - name: Setup Go
         uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
@@ -144,7 +162,7 @@ jobs:
             exit 1
           fi
 
-          if git -c http.extraheader="AUTHORIZATION: bearer ${RELEASE_TOKEN}" ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1; then
+          if GIT_ASKPASS="$RELEASE_GIT_ASKPASS" GIT_TERMINAL_PROMPT=0 git ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1; then
             echo "Error: tag $VERSION already exists on origin"
             exit 1
           fi
@@ -157,7 +175,7 @@ jobs:
           set -euo pipefail
 
           COMMIT_HASH="${{ steps.inputs.outputs.commit_hash }}"
-          git -c http.extraheader="AUTHORIZATION: bearer ${RELEASE_TOKEN}" fetch --no-tags origin "+refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
+          GIT_ASKPASS="$RELEASE_GIT_ASKPASS" GIT_TERMINAL_PROMPT=0 git fetch --no-tags origin "+refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
           if ! git merge-base --is-ancestor "$COMMIT_HASH" "refs/remotes/origin/${DEFAULT_BRANCH}"; then
             echo "Error: commit $COMMIT_HASH is not reachable from origin/${DEFAULT_BRANCH}"
             exit 1
@@ -299,4 +317,4 @@ jobs:
           RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           set -euo pipefail
-          git -c http.extraheader="AUTHORIZATION: bearer ${RELEASE_TOKEN}" push origin "${{ steps.inputs.outputs.version }}"
+          GIT_ASKPASS="$RELEASE_GIT_ASKPASS" GIT_TERMINAL_PROMPT=0 git push origin "${{ steps.inputs.outputs.version }}"
