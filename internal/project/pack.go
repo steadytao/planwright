@@ -68,6 +68,8 @@ func BuildPack(sourceName string, sourceData []byte, g graph.Graph) ([]artifact.
 func renderManifest(sourceName string, files []artifact.File) ([]byte, error) {
 	refs := make([]ManifestRef, 0, len(files))
 	for _, file := range files {
+		// Pack manifests use SHA-256 as a file integrity checksum, not as a password hash.
+		// codeql[go/weak-sensitive-data-hashing]
 		sum := sha256.Sum256(file.Data)
 		refs = append(refs, ManifestRef{
 			Path:   filepath.ToSlash(file.Path),
