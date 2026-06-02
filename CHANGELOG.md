@@ -7,6 +7,27 @@ All notable project changes are tracked here. The project is pre-1.0; compatibil
 No unreleased changes yet.
 
 <details>
+<summary><h2>v0.12.0</h2></summary>
+
+`v0.12.0` is the usability and proof release. It focuses on making the current engine easier to understand, run and review through one polished proof path rather than expanding compatibility.
+
+### Added
+- Added the canonical AWS web application proof walkthrough under `examples/aws-webapp-basic/README.md`.
+- Added a README quick proof path before the full command catalogue.
+- Added a README non-goals section clarifying that Planwright is not a one-click deployer, universal converter, compliance tool, live cloud scanner or drag-and-drop diagrammer in the current implementation.
+- Added ADR 0013 for the proof-before-expansion decision.
+- Added `docs/releases/v0.12.0.md`.
+- Added CLI regression coverage for the full AWS web application proof path.
+- Added CLI regression coverage for public database risk reporting and Terraform/OpenTofu generator refusal.
+
+### Changed
+- Reframed roadmap `v0.12` as a usability and proof release.
+- Updated agent guidance to prioritise one polished proof path over broad feature growth.
+- Linked the canonical example walkthrough from the documentation index.
+
+</details>
+
+<details>
 <summary><h2>v0.11.0</h2></summary>
 
 `v0.11.0` is the first planned published release. Earlier version sections below describe internal project-history milestones, not published release tags.
