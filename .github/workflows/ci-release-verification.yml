@@ -1,0 +1,194 @@
+name: CI / Release Verification
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-release-verification-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  GORELEASER_VERSION: v2.16.0
+
+jobs:
+  preflight:
+    name: Preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 1
+    outputs:
+      has_release_inputs: ${{ steps.detect.outputs.has_release_inputs }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          allowed-endpoints: |
+            168.63.129.16:53
+            api.github.com:443
+            codeload.github.com:443
+            github.com:443
+            *.actions.githubusercontent.com:443
+            results-receiver.actions.githubusercontent.com:443
+            *.blob.core.windows.net:443
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 1
+
+      - name: Detect Release Inputs
+        id: detect
+        run: |
+          set -euo pipefail
+
+          if [ ! -f go.mod ]; then
+            {
+              echo "# CI / Release Verification"
+              echo "- Result: skipped"
+              echo
+              echo "## Why this was skipped"
+              echo "- No \`go.mod\` file was found at the repository root."
+            } >> "${GITHUB_STEP_SUMMARY}"
+            echo "has_release_inputs=false" >> "${GITHUB_OUTPUT}"
+            exit 0
+          fi
+
+          for config in .github/config/goreleaser.yaml; do
+            if [ -f "${config}" ]; then
+              echo "has_release_inputs=true" >> "${GITHUB_OUTPUT}"
+              exit 0
+            fi
+          done
+
+          {
+            echo "# CI / Release Verification"
+            echo "- Result: skipped"
+            echo
+            echo "## Why this was skipped"
+            echo "- No GoReleaser configuration file was found."
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+          echo "has_release_inputs=false" >> "${GITHUB_OUTPUT}"
+
+  release-verification:
+    name: Release Verification
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    needs:
+      - preflight
+    if: ${{ needs.preflight.outputs.has_release_inputs == 'true' }}
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          allowed-endpoints: |
+            168.63.129.16:53
+            api.github.com:443
+            codeload.github.com:443
+            github.com:443
+            *.actions.githubusercontent.com:443
+            results-receiver.actions.githubusercontent.com:443
+            *.blob.core.windows.net:443
+            github-releases.githubusercontent.com:443
+            objects.githubusercontent.com:443
+            objects-origin.githubusercontent.com:443
+            github-registry-files.githubusercontent.com:443
+            proxy.golang.org:443
+            raw.githubusercontent.com:443
+            sum.golang.org:443
+
+      - name: Checkout
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Setup Go
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version-file: go.mod
+          check-latest: false
+          cache: true
+
+      - name: Install GoReleaser
+        run: |
+          set -euo pipefail
+          go install "github.com/goreleaser/goreleaser/v2@${GORELEASER_VERSION}"
+
+      - name: Validate GoReleaser Config
+        run: |
+          set -euo pipefail
+          "$(go env GOPATH)/bin/goreleaser" check --config .github/config/goreleaser.yaml
+
+      - name: Verify CONTRIBUTORS Ledger
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/release/generate_contributors.py --check
+
+      - name: Build Snapshot Release Surface
+        env:
+          RELEASE_NAME: Planwright snapshot
+        run: |
+          set -euo pipefail
+          "$(go env GOPATH)/bin/goreleaser" build --config .github/config/goreleaser.yaml --snapshot --clean
+
+      - name: Prepare Snapshot Release Assets
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/release/prepare_release_assets.py --dist dist --out dist/release-assets --skip-checksums
+
+      - name: Package Snapshot App Surfaces
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/release/package_platform_apps.py --dist dist --out dist/release-assets --version snapshot
+
+      - name: Generate Snapshot SBOMs
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/release/generate_sboms.py --version snapshot --out dist/release-assets
+          python3 .github/scripts/release/prepare_release_assets.py --out dist/release-assets --checksums-only
+
+      - name: Verify Generated Release Integrity Assets
+        run: |
+          set -euo pipefail
+
+          expected_assets=(
+            dist/release-assets/planwright_windows_amd64.exe
+            dist/release-assets/planwright_windows_arm64.exe
+            dist/release-assets/planwright_linux_amd64
+            dist/release-assets/planwright_linux_arm64
+            dist/release-assets/planwright_darwin_amd64
+            dist/release-assets/planwright_darwin_arm64
+            dist/release-assets/planwright_linux_amd64_desktop.zip
+            dist/release-assets/planwright_linux_arm64_desktop.zip
+            dist/release-assets/planwright_darwin_amd64_app.zip
+            dist/release-assets/planwright_darwin_arm64_app.zip
+            dist/release-assets/planwright_sbom.spdx.json
+            dist/release-assets/planwright_sbom.cdx.json
+            dist/release-assets/SHA2-256SUMS
+            dist/release-assets/SHA2-512SUMS
+          )
+
+          for asset in "${expected_assets[@]}"; do
+            if [ ! -f "$asset" ]; then
+              echo "Missing expected release asset: $asset"
+              exit 1
+            fi
+          done
+
+          (
+            cd dist/release-assets
+            python3 -m json.tool planwright_sbom.spdx.json >/dev/null
+            python3 -m json.tool planwright_sbom.cdx.json >/dev/null
+            sha256sum -c SHA2-256SUMS
+            sha512sum -c SHA2-512SUMS
+          )

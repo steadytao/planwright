@@ -1,0 +1,25 @@
+Transform: AWS::Serverless-2016-10-31
+Description: Planwright SAM import example.
+
+Resources:
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      Runtime: provided.al2023
+      Handler: bootstrap
+      Events:
+        ApiEvent:
+          Type: HttpApi
+          Properties:
+            Path: /hello
+            Method: GET
+
+  Api:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: prod
+
+  Table:
+    Type: AWS::Serverless::SimpleTable
+    Properties:
+      TableName: planwright-table

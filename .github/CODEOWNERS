@@ -1,0 +1,58 @@
+# Project-wide Ownership
+* @steadytao
+
+# Governance, Security and Contributor Process
+/docs/project/GOVERNANCE.md @steadytao
+/.github/SECURITY.md @steadytao
+/.github/SUPPORT.md @steadytao
+/.github/CODE_OF_CONDUCT.md @steadytao
+/.github/CONTRIBUTING.md @steadytao
+/docs/project/DCO.md @steadytao
+/docs/project/MAINTAINERS.md @steadytao
+/AUTHORS @steadytao
+/CONTRIBUTORS @steadytao
+/.github/CODEOWNERS @steadytao
+
+# Product and User-Facing Documentation
+/README.md @steadytao
+/CHANGELOG.md @steadytao
+/docs/README.md @steadytao
+/docs/compatibility.md @steadytao
+/docs/roadmap.md @steadytao
+/docs/releases/ @steadytao
+
+# Architecture, Graph and Planning Semantics
+/docs/architecture/ @steadytao
+/internal/graph/ @steadytao
+/internal/plan/ @steadytao
+/internal/policy/ @steadytao
+/internal/reports/ @steadytao
+
+# Importers, Generators and Review Surface
+/cmd/planwright/ @steadytao
+/internal/cli/ @steadytao
+/internal/importers/ @steadytao
+/internal/generators/ @steadytao
+/internal/review/ @steadytao
+/internal/project/ @steadytao
+
+# Local Web UI
+/internal/server/ @steadytao
+
+# Examples and Fixtures
+/examples/ @steadytao
+
+# CI, Release and Supply Chain
+/.github/ @steadytao
+/.github/config/goreleaser.yaml @steadytao
+/go.mod @steadytao
+/go.sum @steadytao
+
+# Repository Standards
+/.editorconfig @steadytao
+/.gitattributes @steadytao
+/.gitignore @steadytao
+/AGENTS.md @steadytao
+/LICENSE @steadytao
+/.github/config/cspell.json @steadytao
+/docs/development/ @steadytao

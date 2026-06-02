@@ -1,0 +1,80 @@
+<!doctype html>
+<!-- Copyright 2026 The Planwright Authors -->
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Planwright Workbench</title>
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body>
+    <main class="shell">
+      <header class="topbar">
+        <div>
+          <h1>Planwright Workbench</h1>
+          <p>Local plan validation, graph review and generated artefact previews.</p>
+        </div>
+        <button id="load-example" type="button">Load example</button>
+      </header>
+
+      <section class="workspace" aria-label="Planwright local workbench">
+        <form class="editor-panel" id="plan-form">
+          <div class="panel-heading">
+            <label for="plan-input">Plan input</label>
+            <button type="submit">Validate</button>
+          </div>
+          <textarea id="plan-input" spellcheck="false"></textarea>
+        </form>
+
+        <section class="review-panel" aria-label="Validation results">
+          <div id="status" class="status" role="status" aria-live="polite">Ready.</div>
+
+          <section class="section-block">
+            <h2>Diagnostics</h2>
+            <ul id="diagnostics" class="diagnostics"></ul>
+          </section>
+
+          <section class="section-block table-grid">
+            <div>
+              <h2>Nodes</h2>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>ID</th><th>Kind</th></tr>
+                  </thead>
+                  <tbody id="nodes"></tbody>
+                </table>
+              </div>
+            </div>
+            <div>
+              <h2>Edges</h2>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr><th>From</th><th>To</th><th>Flow</th></tr>
+                  </thead>
+                  <tbody id="edges"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
+          <section class="section-block">
+            <h2>Previews</h2>
+            <div class="tabs" role="tablist" aria-label="Generated previews">
+              <button type="button" role="tab" aria-selected="true" data-preview="security">Security</button>
+              <button type="button" role="tab" aria-selected="false" data-preview="cost">Cost</button>
+              <button type="button" role="tab" aria-selected="false" data-preview="deployability">Deployability</button>
+              <button type="button" role="tab" aria-selected="false" data-preview="terraform">Terraform</button>
+              <button type="button" role="tab" aria-selected="false" data-preview="mermaid">Mermaid</button>
+            </div>
+            <pre id="preview" tabindex="0"></pre>
+          </section>
+        </section>
+      </section>
+    </main>
+    <script src="/app.js"></script>
+  </body>
+</html>

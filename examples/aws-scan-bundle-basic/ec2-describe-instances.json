@@ -1,0 +1,25 @@
+{
+  "Reservations": [
+    {
+      "Instances": [
+        {
+          "InstanceId": "i-123",
+          "InstanceType": "t3.micro",
+          "VpcId": "vpc-123",
+          "SubnetId": "subnet-123",
+          "PrivateIpAddress": "10.0.1.10",
+          "PublicIpAddress": "203.0.113.10",
+          "State": {
+            "Name": "running"
+          },
+          "SecurityGroups": [
+            {
+              "GroupId": "sg-123",
+              "GroupName": "web"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

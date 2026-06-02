@@ -1,0 +1,281 @@
+/*
+ * Copyright 2026 The Planwright Authors
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+:root {
+  color-scheme: dark;
+  --bg: #000000;
+  --surface: #000000;
+  --text: #ffffff;
+  --muted: #c8c8c8;
+  --border: #ffffff;
+  --border-muted: #777777;
+  --danger: #ff8a8a;
+  --warn: #ffd166;
+  --ok: #8df7a7;
+  --focus: #ffffff;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #000000;
+  color: var(--text);
+  font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+button,
+textarea {
+  font: inherit;
+}
+
+button {
+  min-height: 40px;
+  padding: 0 14px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: #000000;
+  color: #ffffff;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+button:hover {
+  background: #ffffff;
+  color: #000000;
+}
+
+button:focus-visible,
+textarea:focus-visible,
+pre:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.shell {
+  width: min(1420px, 100%);
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.topbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.topbar h1 {
+  margin: 0;
+  font-size: 28px;
+  line-height: 1.15;
+}
+
+.topbar p {
+  margin: 6px 0 0;
+  color: var(--muted);
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(360px, 0.86fr) minmax(460px, 1.14fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.editor-panel,
+.review-panel {
+  background: #000000;
+  border: 1px solid var(--border);
+  border-radius: 0;
+}
+
+.editor-panel {
+  min-height: calc(100vh - 122px);
+  display: flex;
+  flex-direction: column;
+}
+
+.panel-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px;
+  border-bottom: 1px solid var(--border);
+}
+
+.panel-heading label,
+.section-block h2 {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+textarea {
+  flex: 1;
+  width: 100%;
+  min-height: 520px;
+  resize: vertical;
+  border: 0;
+  padding: 16px;
+  background: #000000;
+  color: #ffffff;
+  font-family: Consolas, "Cascadia Mono", "SFMono-Regular", monospace;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.review-panel {
+  min-width: 0;
+  padding: 14px;
+}
+
+.status {
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: #000000;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.status.ok {
+  color: var(--ok);
+}
+
+.status.error {
+  color: var(--danger);
+}
+
+.section-block {
+  margin-top: 16px;
+}
+
+.diagnostics {
+  min-height: 44px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.diagnostics li {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--border-muted);
+  border-radius: 0;
+  background: #000000;
+}
+
+.diagnostics .error {
+  border-color: var(--danger);
+  color: var(--danger);
+}
+
+.diagnostics .warn {
+  border-color: var(--warn);
+  color: var(--warn);
+}
+
+.table-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.table-wrap {
+  margin-top: 8px;
+  max-height: 240px;
+  overflow: auto;
+  border: 1px solid var(--border);
+  border-radius: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+th,
+td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--border-muted);
+  text-align: left;
+  vertical-align: top;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  background: #000000;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 8px 0;
+}
+
+.tabs button {
+  background: #000000;
+  color: #ffffff;
+}
+
+.tabs button[aria-selected="true"] {
+  background: #ffffff;
+  color: #000000;
+}
+
+pre {
+  min-height: 260px;
+  max-height: 420px;
+  overflow: auto;
+  margin: 0;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  background: #000000;
+  color: #ffffff;
+  font-family: Consolas, "Cascadia Mono", "SFMono-Regular", monospace;
+  font-size: 12.5px;
+  line-height: 1.55;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 900px) {
+  .shell {
+    padding: 16px;
+  }
+
+  .topbar,
+  .workspace,
+  .table-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    display: grid;
+  }
+
+  .editor-panel {
+    min-height: auto;
+  }
+
+  textarea {
+    min-height: 380px;
+  }
+}

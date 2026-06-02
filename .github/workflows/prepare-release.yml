@@ -1,0 +1,302 @@
+name: Prepare Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Version to tag, for example v0.1.0"
+        required: true
+        type: string
+      commit_hash:
+        description: "Commit hash to release from"
+        required: true
+        type: string
+
+concurrency:
+  group: prepare-release-${{ inputs.version }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  GOTOOLCHAIN: local
+  STATICCHECK_VERSION: 2026.1
+  GOSEC_VERSION: v2.26.1
+  GOVULNCHECK_VERSION: v1.3.0
+
+jobs:
+  prepare:
+    name: Verify and Tag Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          allowed-endpoints: |
+            168.63.129.16:53
+            api.github.com:443
+            codeload.github.com:443
+            github.com:443
+            *.actions.githubusercontent.com:443
+            results-receiver.actions.githubusercontent.com:443
+            *.blob.core.windows.net:443
+            github-releases.githubusercontent.com:443
+            objects.githubusercontent.com:443
+            objects-origin.githubusercontent.com:443
+            github-registry-files.githubusercontent.com:443
+            proxy.golang.org:443
+            raw.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            storage.googleapis.com:443
+            sum.golang.org:443
+
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.RELEASE_TOKEN }}
+          persist-credentials: false
+
+      - name: Check Release Token Availability
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${RELEASE_TOKEN}" ]; then
+            echo "Error: RELEASE_TOKEN is not available to this workflow"
+            echo "Configure it as a repository, organisation or environment secret that this job can access"
+            exit 1
+          fi
+
+      - name: Setup Go
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version-file: go.mod
+          check-latest: true
+          cache: true
+
+      - name: Print Go Version
+        run: go version
+
+      - name: Install Release Analysis Tools
+        run: |
+          set -euo pipefail
+          go install "honnef.co/go/tools/cmd/staticcheck@${STATICCHECK_VERSION}"
+          go install "github.com/securego/gosec/v2/cmd/gosec@${GOSEC_VERSION}"
+          go install "golang.org/x/vuln/cmd/govulncheck@${GOVULNCHECK_VERSION}"
+
+      - name: Trim and Validate Inputs
+        id: inputs
+        env:
+          INPUT_COMMIT_HASH: ${{ inputs.commit_hash }}
+          INPUT_VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+
+          VERSION="${INPUT_VERSION}"
+          COMMIT_HASH="${INPUT_COMMIT_HASH}"
+          VERSION="${VERSION#"${VERSION%%[![:space:]]*}"}"
+          VERSION="${VERSION%"${VERSION##*[![:space:]]}"}"
+          COMMIT_HASH="${COMMIT_HASH#"${COMMIT_HASH%%[![:space:]]*}"}"
+          COMMIT_HASH="${COMMIT_HASH%"${COMMIT_HASH##*[![:space:]]}"}"
+
+          if [[ ! "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.]+)?$ ]]; then
+            echo "Error: version must follow semver form such as v0.1.0 or v0.1.0-rc.1"
+            exit 1
+          fi
+
+          if [[ ! "$COMMIT_HASH" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "Error: commit_hash must be a full 40-character lowercase SHA"
+            exit 1
+          fi
+
+          if ! git cat-file -e "$COMMIT_HASH^{commit}" 2>/dev/null; then
+            echo "Error: commit $COMMIT_HASH does not exist"
+            exit 1
+          fi
+
+          RELEASE_NOTES_FILE="docs/releases/${VERSION}.md"
+          {
+            echo "version=$VERSION"
+            echo "commit_hash=$COMMIT_HASH"
+            echo "release_notes_file=$RELEASE_NOTES_FILE"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check Release Tag Availability
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          VERSION="${{ steps.inputs.outputs.version }}"
+
+          if git rev-parse "$VERSION" >/dev/null 2>&1; then
+            echo "Error: tag $VERSION already exists locally"
+            exit 1
+          fi
+
+          if git -c http.extraheader="AUTHORIZATION: bearer ${RELEASE_TOKEN}" ls-remote --exit-code --tags origin "refs/tags/$VERSION" >/dev/null 2>&1; then
+            echo "Error: tag $VERSION already exists on origin"
+            exit 1
+          fi
+
+      - name: Check Target Commit is on Default Branch
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          COMMIT_HASH="${{ steps.inputs.outputs.commit_hash }}"
+          git -c http.extraheader="AUTHORIZATION: bearer ${RELEASE_TOKEN}" fetch --no-tags origin "+refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
+          if ! git merge-base --is-ancestor "$COMMIT_HASH" "refs/remotes/origin/${DEFAULT_BRANCH}"; then
+            echo "Error: commit $COMMIT_HASH is not reachable from origin/${DEFAULT_BRANCH}"
+            exit 1
+          fi
+
+      - name: Checkout Target Commit
+        run: git checkout "${{ steps.inputs.outputs.commit_hash }}"
+
+      - name: Configure git Identity for Release Tag
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check Checked-in Release Notes File Exists
+        run: |
+          RELEASE_NOTES_FILE="${{ steps.inputs.outputs.release_notes_file }}"
+
+          if [ ! -f "$RELEASE_NOTES_FILE" ]; then
+            echo "Error: checked-in release notes file '$RELEASE_NOTES_FILE' does not exist"
+            exit 1
+          fi
+
+      - name: Check Release Notes for Changelog Marker
+        run: |
+          RELEASE_NOTES_FILE="${{ steps.inputs.outputs.release_notes_file }}"
+          CHANGELOG_MARKER="<!-- changelog: do not remove this line or add a changelog -->"
+
+          if ! grep -Fxq "$CHANGELOG_MARKER" "$RELEASE_NOTES_FILE"; then
+            echo "Error: release notes file '$RELEASE_NOTES_FILE' must contain the changelog marker"
+            exit 1
+          fi
+
+      - name: Verify CONTRIBUTORS Ledger
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/release/generate_contributors.py --check
+
+      - name: Check gofmt
+        run: |
+          mapfile -t go_files < <(git ls-files '*.go')
+          if [ "${#go_files[@]}" -eq 0 ]; then
+            echo "No Go files found for gofmt verification"
+            exit 1
+          fi
+
+          unformatted="$(gofmt -l "${go_files[@]}")"
+          if [ -n "$unformatted" ]; then
+            echo "Unformatted Go files:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - name: Check Module Tidiness
+        run: go mod tidy -diff
+
+      - name: Verify Module Definitions
+        run: go mod verify
+
+      - name: Resolve CLI Binary Path
+        run: |
+          ci_temp_dir="$RUNNER_TEMP"
+          if command -v cygpath >/dev/null 2>&1; then
+            ci_temp_dir="$(cygpath -u "$RUNNER_TEMP")"
+          fi
+
+          binary_name="planwright"
+          if [ "$RUNNER_OS" = "Windows" ]; then
+            binary_name="${binary_name}.exe"
+          fi
+
+          printf 'PLANWRIGHT_BINARY=%s\n' "$ci_temp_dir/$binary_name" >> "$GITHUB_ENV"
+
+      - name: Build CLI
+        run: go build -o "$PLANWRIGHT_BINARY" ./cmd/planwright
+
+      - name: Run go vet
+        run: go vet ./...
+
+      - name: Run staticcheck
+        run: |
+          set -euo pipefail
+          "$(go env GOPATH)/bin/staticcheck" ./...
+
+      - name: Run gosec
+        run: |
+          set -euo pipefail
+          "$(go env GOPATH)/bin/gosec" ./...
+
+      - name: Run govulncheck
+        run: |
+          set -euo pipefail
+          "$(go env GOPATH)/bin/govulncheck" ./...
+
+      - name: Run test suite
+        run: go test -count=1 ./...
+
+      - name: Run Deterministic CLI Smoke Checks
+        run: |
+          set -euo pipefail
+
+          assert_contains() {
+            local text="$1"
+            local needle="$2"
+            local label="$3"
+            if ! grep -Fq -- "$needle" <<<"$text"; then
+              echo "$label did not contain expected text: $needle"
+              exit 1
+            fi
+          }
+
+          output="$("$PLANWRIGHT_BINARY" --help)"
+          assert_contains "$output" "planwright validate <planwright.yaml>" "CLI help output"
+          assert_contains "$output" "planwright docs check [path ...]" "CLI help output"
+
+          output="$("$PLANWRIGHT_BINARY" version)"
+          assert_contains "$output" "planwright 0.11.0" "Version output"
+
+          "$PLANWRIGHT_BINARY" docs check .
+
+      - name: Check Diff Formatting
+        run: git diff --check
+
+      - name: Ensure Working Tree is Unchanged
+        run: |
+          status="$(git status --porcelain=v1)"
+          if [ -n "$status" ]; then
+            echo "working tree changed during verification"
+            echo "$status"
+            exit 1
+          fi
+
+      - name: Create Annotated Release Tag
+        run: |
+          VERSION="${{ steps.inputs.outputs.version }}"
+          git tag -a "$VERSION" -m "Release $VERSION"
+
+      - name: Push Release Tag
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+          git -c http.extraheader="AUTHORIZATION: bearer ${RELEASE_TOKEN}" push origin "${{ steps.inputs.outputs.version }}"

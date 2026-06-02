@@ -1,0 +1,30 @@
+{
+  "SecurityGroups": [
+    {
+      "GroupId": "sg-123",
+      "GroupName": "web",
+      "Description": "Example web ingress.",
+      "VpcId": "vpc-123",
+      "IpPermissions": [
+        {
+          "IpProtocol": "tcp",
+          "FromPort": 443,
+          "ToPort": 443,
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ]
+        },
+        {
+          "IpProtocol": "-1",
+          "IpRanges": [
+            {
+              "CidrIp": "0.0.0.0/0"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

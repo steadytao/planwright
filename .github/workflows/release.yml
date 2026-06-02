@@ -1,0 +1,318 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: release-${{ github.ref_name }}
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    shell: bash
+
+env:
+  GOTOOLCHAIN: local
+
+jobs:
+  release:
+    name: Build, Sign and Publish Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: release
+    permissions:
+      contents: write
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        with:
+          egress-policy: block
+          allowed-endpoints: |
+            168.63.129.16:53
+            api.github.com:443
+            codeload.github.com:443
+            github.com:443
+            *.actions.githubusercontent.com:443
+            results-receiver.actions.githubusercontent.com:443
+            *.blob.core.windows.net:443
+            github-releases.githubusercontent.com:443
+            objects.githubusercontent.com:443
+            objects-origin.githubusercontent.com:443
+            github-registry-files.githubusercontent.com:443
+            proxy.golang.org:443
+            raw.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            sum.golang.org:443
+            uploads.github.com:443
+
+      - name: Checkout Repository
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Validate Release Tag
+        run: |
+          set -euo pipefail
+
+          if [[ ! "${GITHUB_REF_NAME}" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[A-Za-z0-9.]+)?$ ]]; then
+            echo "Error: release tag must follow semver form such as v0.1.0 or v0.1.0-rc.1"
+            exit 1
+          fi
+
+          tag_ref="refs/tags/${GITHUB_REF_NAME}"
+          tag_type="$(git cat-file -t "${tag_ref}")"
+          if [ "${tag_type}" != "tag" ]; then
+            echo "Error: release tag ${GITHUB_REF_NAME} must be an annotated tag"
+            exit 1
+          fi
+
+      - name: Check Target Commit is on Default Branch
+        env:
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          git -c http.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" fetch --no-tags origin "+refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
+
+          TAG_COMMIT="$(git rev-list -n 1 "refs/tags/${GITHUB_REF_NAME}")"
+          if ! git merge-base --is-ancestor "${TAG_COMMIT}" "refs/remotes/origin/${DEFAULT_BRANCH}"; then
+            echo "Error: tag ${GITHUB_REF_NAME} points to ${TAG_COMMIT}, which is not reachable from ${DEFAULT_BRANCH}"
+            exit 1
+          fi
+
+      - name: Setup Go
+        uses: actions/setup-go@4a3601121dd01d1626a1e23e37211e3254c1c06c # v6.4.0
+        with:
+          go-version-file: go.mod
+          check-latest: true
+          cache: true
+
+      - name: Print Tool Versions
+        run: |
+          set -euo pipefail
+          go version
+          gpg --version
+          gh --version
+
+      - name: Resolve Release Metadata
+        id: metadata
+        run: |
+          VERSION="${GITHUB_REF_NAME}"
+          RELEASE_NOTES_FILE="docs/releases/${VERSION}.md"
+
+          {
+            echo "version=$VERSION"
+            echo "release_name=Planwright $VERSION"
+            echo "release_notes_file=$RELEASE_NOTES_FILE"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Check Checked-in Release Notes File Exists
+        run: |
+          RELEASE_NOTES_FILE="${{ steps.metadata.outputs.release_notes_file }}"
+
+          if [ ! -f "$RELEASE_NOTES_FILE" ]; then
+            echo "Error: checked-in release notes file '$RELEASE_NOTES_FILE' does not exist"
+            exit 1
+          fi
+
+      - name: Check Release Notes for Changelog Marker
+        run: |
+          RELEASE_NOTES_FILE="${{ steps.metadata.outputs.release_notes_file }}"
+          CHANGELOG_MARKER="<!-- changelog: do not remove this line or add a changelog -->"
+
+          if ! grep -Fxq "$CHANGELOG_MARKER" "$RELEASE_NOTES_FILE"; then
+            echo "Error: release notes file '$RELEASE_NOTES_FILE' must contain the changelog marker"
+            exit 1
+          fi
+
+      - name: Verify CONTRIBUTORS Ledger
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/release/generate_contributors.py --check
+
+      - name: Build Release Notes
+        id: release_notes
+        run: |
+          VERSION="${{ steps.metadata.outputs.version }}"
+          RELEASE_NOTES_FILE="${{ steps.metadata.outputs.release_notes_file }}"
+          GENERATED_RELEASE_NOTES_FILE="$RUNNER_TEMP/release-notes.md"
+
+          cat > "$GENERATED_RELEASE_NOTES_FILE" <<EOF
+          <div align="center">
+
+          [![Which file to download?](https://img.shields.io/badge/-Which_file_to_download%3F-031835.svg?style=for-the-badge&labelColor=020F22)](https://github.com/${GITHUB_REPOSITORY}#release-files "Which file to download?")
+          [![Windows](https://img.shields.io/badge/-Windows_x64-2064FC.svg?style=for-the-badge&logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0zIDQuNiAxMC42IDMuNnY3LjJIM1Y0LjZabTguNi0xLjFMMjEgMi4ydjguNmgtOS40VjMuNVpNMyAxMmg3LjZ2Ny4yTDMgMTguMlYxMlptOC42IDBIMjF2OC42bC05LjQtMS4zVjEyWiIvPjwvc3ZnPg%3D%3D&logoColor=white&labelColor=031835)](https://github.com/${GITHUB_REPOSITORY}/releases/download/${VERSION}/planwright_windows_amd64.exe "Windows x64")
+          [![Linux](https://img.shields.io/badge/-Linux_x64-2064FC.svg?style=for-the-badge&logo=linux&logoColor=white&labelColor=031835)](https://github.com/${GITHUB_REPOSITORY}/releases/download/${VERSION}/planwright_linux_amd64 "Linux x64")
+          [![macOS](https://img.shields.io/badge/-macOS-2064FC.svg?style=for-the-badge&logo=apple&logoColor=white&labelColor=031835)](https://github.com/${GITHUB_REPOSITORY}/releases/download/${VERSION}/planwright_darwin_arm64 "macOS Arm64")
+          [![Source TAR](https://img.shields.io/badge/-Source_TAR-495977.svg?style=for-the-badge&labelColor=031835)](https://github.com/${GITHUB_REPOSITORY}/archive/refs/tags/${VERSION}.tar.gz "Source TAR")
+          [![Other files](https://img.shields.io/badge/-Other-364457.svg?style=for-the-badge&labelColor=031835)](https://github.com/${GITHUB_REPOSITORY}/releases/tag/${VERSION} "Other files")
+          [![README](https://img.shields.io/badge/-README-031835.svg?style=for-the-badge&labelColor=020F22)](https://github.com/${GITHUB_REPOSITORY}#installation "README")
+
+          </div>
+
+          A description of the release files is in the [README](https://github.com/${GITHUB_REPOSITORY}#release-files).
+
+          Verify downloaded binaries with the signed checksum manifests before running them. Import \`public.key\`, verify \`SHA2-256SUMS.sig\` against \`SHA2-256SUMS\` then check the downloaded file against the signed manifest.
+
+          ---
+
+          EOF
+
+          awk '
+            /^## Changelog[[:space:]]*$/ { exit }
+            /^# Changelog[[:space:]]*$/ { exit }
+            /^<!--[[:space:]]*changelog:/ { exit }
+            { print }
+          ' "$RELEASE_NOTES_FILE" >> "$GENERATED_RELEASE_NOTES_FILE"
+
+          printf '\n## Changelog\n\n' >> "$GENERATED_RELEASE_NOTES_FILE"
+
+          PREVIOUS_TAG="$(git describe --tags --abbrev=0 "${VERSION}^" 2>/dev/null || true)"
+          if [ -n "$PREVIOUS_TAG" ]; then
+            git log --reverse --format='- %H %s' "${PREVIOUS_TAG}..${VERSION}" >> "$GENERATED_RELEASE_NOTES_FILE"
+          else
+            git log --reverse --format='- %H %s' "$VERSION" >> "$GENERATED_RELEASE_NOTES_FILE"
+          fi
+
+          echo "generated_release_notes_file=$GENERATED_RELEASE_NOTES_FILE" >> "$GITHUB_OUTPUT"
+
+      - name: Build Release Binaries
+        uses: goreleaser/goreleaser-action@5daf1e915a5f0af01ddbcd89a43b8061ff4f1a89 # v7.2.2
+        with:
+          distribution: goreleaser
+          version: "~> v2"
+          args: build --config .github/config/goreleaser.yaml --clean
+
+      - name: Prepare Release Assets
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/release/prepare_release_assets.py --dist dist --out dist/release-assets --skip-checksums
+
+      - name: Package Platform App Surfaces
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/release/package_platform_apps.py --dist dist --out dist/release-assets --version "${{ steps.metadata.outputs.version }}"
+
+      - name: Generate Release SBOMs
+        run: |
+          set -euo pipefail
+          python3 .github/scripts/release/generate_sboms.py --version "${{ steps.metadata.outputs.version }}" --out dist/release-assets
+          python3 .github/scripts/release/prepare_release_assets.py --out dist/release-assets --checksums-only
+
+      - name: Import Release Signing Key
+        env:
+          RELEASE_SIGNING_KEY_FINGERPRINT: ${{ vars.RELEASE_SIGNING_KEY_FINGERPRINT }}
+          RELEASE_SIGNING_PRIVATE_KEY: ${{ secrets.RELEASE_SIGNING_PRIVATE_KEY }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${RELEASE_SIGNING_KEY_FINGERPRINT}" ]; then
+            echo "Error: RELEASE_SIGNING_KEY_FINGERPRINT is required"
+            exit 1
+          fi
+
+          if [ -z "${RELEASE_SIGNING_PRIVATE_KEY}" ]; then
+            echo "Error: RELEASE_SIGNING_PRIVATE_KEY is required"
+            exit 1
+          fi
+
+          gpg_home="${RUNNER_TEMP}/planwright-gnupg"
+          mkdir -p "${gpg_home}"
+          chmod 700 "${gpg_home}"
+          printf 'GNUPGHOME=%s\n' "${gpg_home}" >> "${GITHUB_ENV}"
+
+          printf '%s' "${RELEASE_SIGNING_PRIVATE_KEY}" | GNUPGHOME="${gpg_home}" gpg --batch --import
+          GNUPGHOME="${gpg_home}" gpg --batch --list-secret-keys "${RELEASE_SIGNING_KEY_FINGERPRINT}"
+          GNUPGHOME="${gpg_home}" gpg --batch --armor --export "${RELEASE_SIGNING_KEY_FINGERPRINT}" > dist/release-assets/public.key
+
+      - name: Sign Checksum Manifests
+        env:
+          RELEASE_SIGNING_KEY_FINGERPRINT: ${{ vars.RELEASE_SIGNING_KEY_FINGERPRINT }}
+          RELEASE_SIGNING_PASSPHRASE: ${{ secrets.RELEASE_SIGNING_PASSPHRASE }}
+        run: |
+          set -euo pipefail
+
+          if [ -z "${RELEASE_SIGNING_KEY_FINGERPRINT}" ]; then
+            echo "Error: RELEASE_SIGNING_KEY_FINGERPRINT is required"
+            exit 1
+          fi
+
+          if [ -z "${RELEASE_SIGNING_PASSPHRASE}" ]; then
+            echo "Error: RELEASE_SIGNING_PASSPHRASE is required"
+            exit 1
+          fi
+
+          cd dist/release-assets
+          for manifest in SHA2-256SUMS SHA2-512SUMS; do
+            printf '%s' "${RELEASE_SIGNING_PASSPHRASE}" | gpg \
+              --batch \
+              --yes \
+              --pinentry-mode loopback \
+              --passphrase-fd 0 \
+              --local-user "${RELEASE_SIGNING_KEY_FINGERPRINT}" \
+              --armor \
+              --detach-sign \
+              --output "${manifest}.sig" \
+              "${manifest}"
+            gpg --batch --verify "${manifest}.sig" "${manifest}"
+          done
+
+      - name: Verify Release Integrity Assets
+        run: |
+          set -euo pipefail
+
+          expected_assets=(
+            dist/release-assets/planwright_windows_amd64.exe
+            dist/release-assets/planwright_windows_arm64.exe
+            dist/release-assets/planwright_linux_amd64
+            dist/release-assets/planwright_linux_arm64
+            dist/release-assets/planwright_darwin_amd64
+            dist/release-assets/planwright_darwin_arm64
+            dist/release-assets/planwright_linux_amd64_desktop.zip
+            dist/release-assets/planwright_linux_arm64_desktop.zip
+            dist/release-assets/planwright_darwin_amd64_app.zip
+            dist/release-assets/planwright_darwin_arm64_app.zip
+            dist/release-assets/planwright_sbom.spdx.json
+            dist/release-assets/planwright_sbom.cdx.json
+            dist/release-assets/SHA2-256SUMS
+            dist/release-assets/SHA2-256SUMS.sig
+            dist/release-assets/SHA2-512SUMS
+            dist/release-assets/SHA2-512SUMS.sig
+            dist/release-assets/public.key
+          )
+
+          for asset in "${expected_assets[@]}"; do
+            if [ ! -f "$asset" ]; then
+              echo "Missing expected release asset: $asset"
+              exit 1
+            fi
+          done
+
+          (
+            cd dist/release-assets
+            python3 -m json.tool planwright_sbom.spdx.json >/dev/null
+            python3 -m json.tool planwright_sbom.cdx.json >/dev/null
+            sha256sum -c SHA2-256SUMS
+            sha512sum -c SHA2-512SUMS
+          )
+
+      - name: Publish Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          gh release create "${{ steps.metadata.outputs.version }}" \
+            dist/release-assets/* \
+            --title "${{ steps.metadata.outputs.release_name }}" \
+            --notes-file "${{ steps.release_notes.outputs.generated_release_notes_file }}" \
+            --verify-tag

@@ -1,0 +1,12 @@
+{
+  "LoadBalancers": [
+    {
+      "LoadBalancerArn": "arn:aws:elasticloadbalancing:ap-southeast-2:123456789012:loadbalancer/app/app/123",
+      "LoadBalancerName": "app",
+      "DNSName": "app.example.elb.amazonaws.com",
+      "Scheme": "internet-facing",
+      "Type": "application",
+      "VpcId": "vpc-123"
+    }
+  ]
+}

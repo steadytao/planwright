@@ -1,0 +1,65 @@
+# Copyright 2026 The Planwright Authors
+# SPDX-License-Identifier: Apache-2.0
+
+minimum_pre_commit_version: "3.5.0"
+default_stages:
+  - pre-commit
+
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: 83d9cd684c87d95d656c1458ef04895a7f1cbd8e # v8.30.1
+    hooks:
+      - id: gitleaks
+
+  - repo: https://github.com/golangci/golangci-lint
+    rev: c0d3ddc9cf3faa61a4e378e879ece580256d76e5 # v2.12.2
+    hooks:
+      - id: golangci-lint-config-verify
+        name: golangci-lint config verify
+        files: ^\.github/config/golangci\.yml$
+        args:
+          - --config=.github/config/golangci.yml
+      - id: golangci-lint-fmt
+        name: golangci-lint fmt
+        args:
+          - --config=.github/config/golangci.yml
+      - id: golangci-lint-full
+        name: golangci-lint run
+        args:
+          - --config=.github/config/golangci.yml
+
+  - repo: https://github.com/jumanjihouse/pre-commit-hooks
+    rev: 38980559e3a605691d6579f96222c30778e5a69e # 3.0.0
+    hooks:
+      - id: shellcheck
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # v6.0.0
+    hooks:
+      - id: check-json
+      - id: check-yaml
+        args:
+          - --allow-multiple-documents
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+
+  - repo: local
+    hooks:
+      - id: planwright-docs-check
+        name: Planwright docs check
+        entry: go run ./cmd/planwright docs check .
+        language: system
+        pass_filenames: false
+        files: ^(AGENTS\.md|CHANGELOG\.md|README\.md|docs/.*|\.github/.*\.(md|ya?ml))$
+      - id: planwright-cspell
+        name: cspell british-english check
+        entry: npx --yes cspell@10.0.1 lint "**/*.md" ".github/**/*.yml" ".github/**/*.yaml" --config .github/config/cspell.json --no-progress --no-summary --no-must-find-files
+        language: system
+        pass_filenames: false
+        files: ^(AGENTS\.md|CHANGELOG\.md|README\.md|docs/.*|\.github/.*\.(md|ya?ml))$
+      - id: planwright-file-headers
+        name: Planwright file headers
+        entry: python3 .github/scripts/ci/check_file_headers.py
+        language: system
+        pass_filenames: false
+        files: ^(cmd/.*\.go|internal/.*\.go|\.github/scripts/.*\.(py|sh))$

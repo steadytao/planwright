@@ -1,0 +1,11 @@
+{
+  "Subnets": [
+    {
+      "SubnetId": "subnet-123",
+      "VpcId": "vpc-123",
+      "CidrBlock": "10.0.1.0/24",
+      "AvailabilityZone": "ap-southeast-2a",
+      "MapPublicIpOnLaunch": true
+    }
+  ]
+}

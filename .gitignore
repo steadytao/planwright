@@ -1,0 +1,55 @@
+# local Planwright state
+/.planwright/
+
+# generated local outputs
+/generated/
+/reports/
+/planwright-pack/
+/planwright-pack.zip
+*.sarif
+
+# Terraform/OpenTofu working state
+/.terraform/
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# build artefacts and helpers
+/bin/
+/dist/
+/planwright
+/planwright.exe
+*.exe
+*.test
+*.tmp
+*.syso
+/.github/generated/
+
+# coverage and profiling artefacts
+coverage.out
+coverage/
+*.prof
+
+# logs and local caches
+*.log
+.cspellcache
+.eslintcache
+.stylelintcache
+
+# macOS files
+.DS_Store
+
+# Windows files
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# IDE files
+.idea/
+.vscode/

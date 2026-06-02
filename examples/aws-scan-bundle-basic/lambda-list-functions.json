@@ -1,0 +1,11 @@
+{
+  "Functions": [
+    {
+      "FunctionName": "worker",
+      "Runtime": "provided.al2023",
+      "Handler": "bootstrap",
+      "Role": "arn:aws:iam::123456789012:role/lambda-worker",
+      "FunctionArn": "arn:aws:lambda:ap-southeast-2:123456789012:function:worker"
+    }
+  ]
+}

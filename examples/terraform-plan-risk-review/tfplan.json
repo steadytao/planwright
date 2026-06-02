@@ -1,0 +1,73 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.15.5",
+  "applyable": true,
+  "complete": true,
+  "errored": false,
+  "resource_changes": [
+    {
+      "address": "aws_s3_bucket.logs",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "logs",
+      "change": {
+        "actions": [
+          "delete"
+        ],
+        "before": {
+          "bucket": "planwright-example-logs"
+        },
+        "after": null
+      }
+    },
+    {
+      "address": "aws_db_instance.app",
+      "mode": "managed",
+      "type": "aws_db_instance",
+      "name": "app",
+      "change": {
+        "actions": [
+          "delete",
+          "create"
+        ],
+        "before": {
+          "publicly_accessible": false
+        },
+        "after": {
+          "publicly_accessible": false
+        }
+      }
+    },
+    {
+      "address": "aws_db_instance.public",
+      "mode": "managed",
+      "type": "aws_db_instance",
+      "name": "public",
+      "change": {
+        "actions": [
+          "update"
+        ],
+        "before": {
+          "publicly_accessible": false
+        },
+        "after": {
+          "publicly_accessible": true
+        }
+      }
+    },
+    {
+      "address": "aws_security_group_rule.admin",
+      "mode": "managed",
+      "type": "aws_security_group_rule",
+      "name": "admin",
+      "change": {
+        "actions": [
+          "update"
+        ],
+        "after_unknown": {
+          "cidr_blocks": true
+        }
+      }
+    }
+  ]
+}

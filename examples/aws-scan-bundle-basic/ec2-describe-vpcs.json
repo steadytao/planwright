@@ -1,0 +1,16 @@
+{
+  "Vpcs": [
+    {
+      "VpcId": "vpc-123",
+      "CidrBlock": "10.0.0.0/16",
+      "IsDefault": false,
+      "State": "available",
+      "Tags": [
+        {
+          "Key": "Name",
+          "Value": "demo-vpc"
+        }
+      ]
+    }
+  ]
+}

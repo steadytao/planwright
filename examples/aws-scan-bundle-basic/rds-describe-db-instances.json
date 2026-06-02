@@ -1,0 +1,19 @@
+{
+  "DBInstances": [
+    {
+      "DBInstanceIdentifier": "db-1",
+      "Engine": "postgres",
+      "PubliclyAccessible": false,
+      "DBInstanceStatus": "available",
+      "Endpoint": {
+        "Port": 5432
+      },
+      "VpcSecurityGroups": [
+        {
+          "VpcSecurityGroupId": "sg-123",
+          "Status": "active"
+        }
+      ]
+    }
+  ]
+}

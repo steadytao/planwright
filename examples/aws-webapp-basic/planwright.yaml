@@ -1,0 +1,34 @@
+version: planwright.v1
+provider: aws
+region: ap-southeast-2
+profile: lab
+
+components:
+  webapp:
+    pattern: aws.webapp.alb_ecs_rds
+    properties:
+      app_port: 8080
+      db_engine: postgres
+      db_public: false
+
+flows:
+  - from: internet
+    to: webapp.alb
+    kind: network.allow
+    protocol: tcp
+    port: 443
+    intent: public_https_entrypoint
+
+  - from: webapp.alb
+    to: webapp.app
+    kind: network.allow
+    protocol: tcp
+    port: 8080
+    intent: load_balancer_to_app
+
+  - from: webapp.app
+    to: webapp.db
+    kind: network.allow
+    protocol: tcp
+    port: 5432
+    intent: application_database_access
