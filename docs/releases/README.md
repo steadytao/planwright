@@ -15,7 +15,7 @@ Start each release note from [`template.md`](template.md).
 
 Each release workflow expects a file named after the tag:
 - `v0.11.0` uses `docs/releases/v0.11.0.md`
-- `v0.12.0` uses `docs/releases/v0.12.0.md`
+- `v0.12.1` uses `docs/releases/v0.12.1.md`
 - release notes are prepared before the tag is created
 - release notes do not include a top-level heading because the GitHub release title supplies it
 - the release workflow prepends download badges and release-file guidance before publishing
@@ -25,6 +25,8 @@ Each release workflow expects a file named after the tag:
 Planwright has no published release artefacts yet.
 
 The first planned published release is `v0.11.0`. Earlier version gates from `v0.0.1` through `v0.10.0` describe project-history milestones only. They were not published as GitHub releases because Planwright became a formal release-tracked project after the v0.11 hardening, governance and release-readiness work.
+
+`v0.12.0` was skipped before publication after release-tag automation needed adjustment. The next planned release note is `v0.12.1`.
 
 Use [`checklist.md`](checklist.md) before tagging a release.
 

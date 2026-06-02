@@ -7,25 +7,30 @@ All notable project changes are tracked here. The project is pre-1.0; compatibil
 No unreleased changes yet.
 
 <details>
-<summary><h2>v0.12.0</h2></summary>
+<summary><h2>v0.12.1</h2></summary>
 
-`v0.12.0` is the usability and proof release. It focuses on making the current engine easier to understand, run and review through one polished proof path rather than expanding compatibility.
+`v0.12.1` is the usability and proof release. It focuses on making the current engine easier to understand, run and review through one polished proof path rather than expanding compatibility.
+
+`v0.12.0` was skipped before publication after release-tag automation needed adjustment.
 
 ### Added
 - Added the canonical AWS web application proof walkthrough under `examples/aws-webapp-basic/README.md`.
 - Added a README quick proof path before the full command catalogue.
 - Added a README non-goals section clarifying that Planwright is not a one-click deployer, universal converter, compliance tool, live cloud scanner or drag-and-drop diagrammer in the current implementation.
 - Added ADR 0013 for the proof-before-expansion decision.
-- Added `docs/releases/v0.12.0.md`.
+- Added `docs/releases/v0.12.1.md`.
 - Added CLI regression coverage for the full AWS web application proof path.
 - Added CLI regression coverage for public database risk reporting and Terraform/OpenTofu generator refusal.
 - Added GitHub artefact attestations for release assets.
+- Added a narrow documentation-style exception for Shields badge URLs.
 
 ### Changed
 - Reframed roadmap `v0.12` as a usability and proof release.
 - Updated agent guidance to prioritise one polished proof path over broad feature growth.
 - Linked the canonical example walkthrough from the documentation index.
 - Documented release provenance verification alongside OpenPGP checksum verification.
+- Changed Prepare Release to create annotated tag objects and tag refs through the GitHub Git database API.
+- Updated README status badges so Scorecard stays dynamic while Go Report Card and OpenSSF Best Practices keep the styled green badge presentation.
 
 </details>
 
