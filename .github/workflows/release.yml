@@ -61,6 +61,22 @@ jobs:
           fetch-depth: 0
           persist-credentials: false
 
+      - name: Create Release Git Askpass Helper
+        run: |
+          set -euo pipefail
+
+          askpass="$RUNNER_TEMP/release-git-askpass.sh"
+          cat > "$askpass" <<'EOF'
+          #!/usr/bin/env sh
+          case "$1" in
+            *Username*) printf '%s\n' 'x-access-token' ;;
+            *Password*) printf '%s\n' "${GITHUB_TOKEN:?}" ;;
+            *) exit 1 ;;
+          esac
+          EOF
+          chmod 700 "$askpass"
+          printf 'RELEASE_GIT_ASKPASS=%s\n' "$askpass" >> "$GITHUB_ENV"
+
       - name: Validate Release Tag
         run: |
           set -euo pipefail
@@ -84,7 +100,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          git -c http.extraheader="AUTHORIZATION: bearer ${GITHUB_TOKEN}" fetch --no-tags origin "+refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
+          GIT_ASKPASS="$RELEASE_GIT_ASKPASS" GIT_TERMINAL_PROMPT=0 git fetch --no-tags origin "+refs/heads/${DEFAULT_BRANCH}:refs/remotes/origin/${DEFAULT_BRANCH}"
 
           TAG_COMMIT="$(git rev-list -n 1 "refs/tags/${GITHUB_REF_NAME}")"
           if ! git merge-base --is-ancestor "${TAG_COMMIT}" "refs/remotes/origin/${DEFAULT_BRANCH}"; then
