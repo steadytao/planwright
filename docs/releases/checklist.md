@@ -6,6 +6,7 @@ This checklist keeps Planwright releases tied to actual shipped behaviour.
 - [Verification](#verification)
 - [Supply Chain Integrity](#supply-chain-integrity)
 - [Release Signing](#release-signing)
+- [Release Provenance](#release-provenance)
 - [Scope Discipline](#scope-discipline)
 - [Final Release Preparation](#final-release-preparation)
 
@@ -109,6 +110,16 @@ Before publishing a signed release, confirm that:
 - `RELEASE_SIGNING_KEY_FINGERPRINT` is configured as a GitHub Actions variable available to the release workflow
 - the release workflow fails closed if signing secrets are missing
 - private key material is not committed or logged and is not copied into release notes
+
+# Release Provenance
+
+Before publishing a release, confirm that:
+- the release workflow has `id-token: write` and `attestations: write`
+- GitHub Artifact Attestations are generated for `dist/release-assets/*`
+- `gh attestation verify ./planwright_linux_amd64 -R steadytao/planwright` succeeds against the published Linux binary
+- `gh attestation verify ./planwright_windows_amd64.exe -R steadytao/planwright` succeeds against the published Windows binary
+- release notes and docs do not imply that attestations replace the OpenPGP checksum manifest signatures
+- release notes and docs do not imply that attestations prove vulnerability status, reproducibility, deployability or human review
 
 # Scope Discipline
 

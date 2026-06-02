@@ -4,6 +4,7 @@ Planwright's release integrity model uses a human-controlled OpenPGP key to sign
 - [Trust Root](#trust-root)
 - [Maintainer Rules](#maintainer-rules)
 - [User Verification](#user-verification)
+- [Provenance Attestations](#provenance-attestations)
 
 Current signing-key status:
 - the planned Planwright release signing key fingerprint is `6DB2 3F44 3178 8F6B 49A7 A3E4 E87B 0A3D CF5E FCA9`
@@ -62,3 +63,19 @@ sha256sum -c ./SHA2-256SUMS --ignore-missing
 ```
 
 The signed manifests also cover release SBOM files when they are attached to the release.
+
+# Provenance Attestations
+
+Planwright release assets are also covered by GitHub artefact attestations created by the release workflow.
+
+Verify the downloaded Linux binary attestation:
+```bash
+gh attestation verify ./planwright_linux_amd64 -R steadytao/planwright
+```
+
+Verify the downloaded Windows binary attestation:
+```bash
+gh attestation verify ./planwright_windows_amd64.exe -R steadytao/planwright
+```
+
+The attestation path proves workflow-backed provenance for the file digest. It complements the human-controlled OpenPGP checksum signature but does not replace fingerprint verification of the release signing key.

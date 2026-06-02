@@ -6,6 +6,7 @@ This directory stores checked-in release notes and release-process documentation
 - [Integrity Assets](#integrity-assets)
 - [SBOMs](#sboms)
 - [Release Signing](#release-signing)
+- [Release Provenance](#release-provenance)
 - [Repository Boundary](#repository-boundary)
 
 # Release Notes
@@ -62,6 +63,8 @@ Each release should also attach:
 
 Planwright signs checksum manifests rather than every binary file. This keeps the release asset list small while still covering every binary listed in the manifests.
 
+The release workflow also creates GitHub artefact attestations for the release assets. These attestations provide workflow-backed provenance by digest. They are separate from the OpenPGP checksum manifest signatures and do not replace the human-controlled release signing key.
+
 # SBOMs
 
 Planwright publishes release-level Go module SBOMs in SPDX JSON and CycloneDX JSON formats.
@@ -82,6 +85,22 @@ gpg --import ./public.key
 gpg --verify ./SHA2-256SUMS.sig ./SHA2-256SUMS
 sha256sum -c ./SHA2-256SUMS --ignore-missing
 ```
+
+# Release Provenance
+
+Planwright release assets are attested with GitHub artefact attestations after release integrity assets are verified and before the release is published.
+
+Verify a Linux binary attestation:
+```bash
+gh attestation verify ./planwright_linux_amd64 -R steadytao/planwright
+```
+
+Verify a Windows binary attestation:
+```bash
+gh attestation verify ./planwright_windows_amd64.exe -R steadytao/planwright
+```
+
+Attestations prove the release workflow provenance for the downloaded file digest. They do not prove that the binary is vulnerability-free, reproducible, deployable or reviewed by a human.
 
 # Repository Boundary
 

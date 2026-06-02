@@ -28,6 +28,8 @@ jobs:
       name: release
     permissions:
       contents: write
+      id-token: write
+      attestations: write
 
     steps:
       - name: Harden Runner
@@ -49,6 +51,9 @@ jobs:
             proxy.golang.org:443
             raw.githubusercontent.com:443
             release-assets.githubusercontent.com:443
+            fulcio.sigstore.dev:443
+            rekor.sigstore.dev:443
+            tuf-repo-cdn.sigstore.dev:443
             sum.golang.org:443
             uploads.github.com:443
             archive.ubuntu.com:80
@@ -328,6 +333,11 @@ jobs:
             sha256sum -c SHA2-256SUMS
             sha512sum -c SHA2-512SUMS
           )
+
+      - name: Generate Release Provenance Attestations
+        uses: actions/attest@281a49d4cbb0a72c9575a50d18f6deb515a11deb # v4
+        with:
+          subject-path: dist/release-assets/*
 
       - name: Publish Release
         env:

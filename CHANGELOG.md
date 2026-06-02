@@ -19,11 +19,13 @@ No unreleased changes yet.
 - Added `docs/releases/v0.12.0.md`.
 - Added CLI regression coverage for the full AWS web application proof path.
 - Added CLI regression coverage for public database risk reporting and Terraform/OpenTofu generator refusal.
+- Added GitHub artefact attestations for release assets.
 
 ### Changed
 - Reframed roadmap `v0.12` as a usability and proof release.
 - Updated agent guidance to prioritise one polished proof path over broad feature growth.
 - Linked the canonical example walkthrough from the documentation index.
+- Documented release provenance verification alongside OpenPGP checksum verification.
 
 </details>
 
