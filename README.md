@@ -6,7 +6,7 @@
 [![Sponsor](https://img.shields.io/badge/_-Sponsor-495977.svg?logo=githubsponsors&logoColor=white&labelColor=031835&style=for-the-badge)](https://github.com/sponsors/steadytao "Sponsor")
 [![License: Apache 2.0](https://img.shields.io/badge/-Apache_2.0-2064FC.svg?style=for-the-badge&labelColor=031835)](LICENSE "Licence")
 [![CI Status](https://img.shields.io/github/actions/workflow/status/steadytao/planwright/ci-main.yml?branch=main&label=Tests&style=for-the-badge&labelColor=031835)](https://github.com/steadytao/planwright/actions/workflows/ci-main.yml "CI Status")
-[![Go Report Card](https://goreportcard.com/badge/github.com/steadytao/planwright?style=for-the-badge)](https://goreportcard.com/report/github.com/steadytao/planwright "Go Report Card")
+[![Go Report Card](https://img.shields.io/badge/Go_Report-A%2B-2064FC.svg?style=for-the-badge&labelColor=031835)](https://goreportcard.com/report/github.com/steadytao/planwright "Go Report Card")
 [![OpenSSF Best Practices](https://img.shields.io/badge/OpenSSF_Best_Practices-passing-2064FC.svg?style=for-the-badge&labelColor=031835)](https://www.bestpractices.dev/en/projects/13072 "OpenSSF Best Practices")
 [![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/steadytao/planwright?label=Scorecard&style=for-the-badge&labelColor=031835)](https://scorecard.dev/viewer/?uri=github.com/steadytao/planwright "OpenSSF Scorecard")
 [![Commits](https://img.shields.io/github/commit-activity/m/steadytao/planwright?label=commits&style=for-the-badge&labelColor=031835)](https://github.com/steadytao/planwright/commits "Commit History")
