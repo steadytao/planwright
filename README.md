@@ -93,6 +93,7 @@ curl -LO https://github.com/steadytao/planwright/releases/latest/download/SHA2-2
 gpg --import ./public.key
 gpg --verify ./SHA2-256SUMS.sig ./SHA2-256SUMS
 sha256sum -c ./SHA2-256SUMS --ignore-missing
+gh attestation verify ./planwright_linux_amd64 -R steadytao/planwright
 ```
 
 Example verification on Windows:
@@ -104,6 +105,7 @@ gpg --import .\public.key
 gpg --verify .\SHA2-256SUMS.sig .\SHA2-256SUMS
 (Get-FileHash .\planwright_windows_amd64.exe -Algorithm SHA256).Hash.ToLower()
 Select-String -Path .\SHA2-256SUMS -Pattern "planwright_windows_amd64.exe"
+gh attestation verify .\planwright_windows_amd64.exe -R steadytao/planwright
 ```
 
 # UPDATE
