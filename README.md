@@ -223,20 +223,6 @@ Start the current local browser workbench:
 go run ./cmd/planwright serve . --addr 127.0.0.1:5786
 ```
 
-# WHAT PLANWRIGHT IS NOT
-
-Planwright is not:
-- a one-click deployment console
-- a live cloud account scanner in the current implementation
-- a Terraform or OpenTofu runner
-- a Kubernetes cluster client
-- a compliance certification tool
-- a lossless universal IaC converter
-- a drag-and-drop cloud diagrammer in the current local web workbench
-- a replacement for infrastructure review, threat modelling, cost review or deployment planning
-
-The current value is local evidence generation. Planwright should make infrastructure easier to inspect before deployment; it should not hide uncertainty behind compatibility claims.
-
 # CURRENT SCOPE
 
 Planwright is in the v0.12 usability and proof stage. The immediate focus is making the existing engine easy to understand, run and review through one polished proof path rather than expanding the feature surface.
