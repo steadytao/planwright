@@ -249,6 +249,9 @@ func allowedAmericanContext(line string, word string) bool {
 	if strings.Contains(line, "`") {
 		return true
 	}
+	if strings.Contains(line, "https://img.shields.io/") {
+		return true
+	}
 	if strings.Contains(line, "SPDX-License-Identifier") || strings.Contains(line, "Apache License") || strings.Contains(line, "LICENSE") {
 		return true
 	}
