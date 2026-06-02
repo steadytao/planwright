@@ -105,6 +105,7 @@ Before publishing a signed release, confirm that:
 - the `release` environment exists in GitHub
 - the `release` environment requires maintainer approval before secrets are exposed
 - `RELEASE_TOKEN` is configured as a GitHub Actions secret available to the prepare-release workflow in the `release` environment
+- `RELEASE_TOKEN` can create annotated tag objects and tag refs through the GitHub Git database API
 - `RELEASE_SIGNING_PRIVATE_KEY` is configured as a GitHub Actions secret available to the release workflow
 - `RELEASE_SIGNING_PASSPHRASE` is configured as a GitHub Actions secret available to the release workflow
 - `RELEASE_SIGNING_KEY_FINGERPRINT` is configured as a GitHub Actions variable available to the release workflow

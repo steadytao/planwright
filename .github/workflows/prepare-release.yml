@@ -184,11 +184,6 @@ jobs:
       - name: Checkout Target Commit
         run: git checkout "${{ steps.inputs.outputs.commit_hash }}"
 
-      - name: Configure git Identity for Release Tag
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-
       - name: Check Checked-in Release Notes File Exists
         run: |
           RELEASE_NOTES_FILE="${{ steps.inputs.outputs.release_notes_file }}"
@@ -308,13 +303,43 @@ jobs:
           fi
 
       - name: Create Annotated Release Tag
-        run: |
-          VERSION="${{ steps.inputs.outputs.version }}"
-          git tag -a "$VERSION" -m "Release $VERSION"
-
-      - name: Push Release Tag
+        id: release_tag
         env:
-          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           set -euo pipefail
-          GIT_ASKPASS="$RELEASE_GIT_ASKPASS" GIT_TERMINAL_PROMPT=0 git push origin "${{ steps.inputs.outputs.version }}"
+
+          version="${{ steps.inputs.outputs.version }}"
+          commit_hash="${{ steps.inputs.outputs.commit_hash }}"
+
+          tag_sha="$(
+            gh api "repos/${GITHUB_REPOSITORY}/git/tags" \
+              --method POST \
+              --field "tag=${version}" \
+              --field "message=Release ${version}" \
+              --field "object=${commit_hash}" \
+              --field "type=commit" \
+              --jq ".sha"
+          )"
+
+          if [[ ! "$tag_sha" =~ ^[a-f0-9]{40}$ ]]; then
+            echo "Error: GitHub API returned an invalid tag object SHA: $tag_sha"
+            exit 1
+          fi
+
+          echo "tag_sha=$tag_sha" >> "$GITHUB_OUTPUT"
+
+      - name: Create Release Tag Ref
+        env:
+          GH_TOKEN: ${{ secrets.RELEASE_TOKEN }}
+        run: |
+          set -euo pipefail
+
+          version="${{ steps.inputs.outputs.version }}"
+          tag_sha="${{ steps.release_tag.outputs.tag_sha }}"
+
+          gh api "repos/${GITHUB_REPOSITORY}/git/refs" \
+            --method POST \
+            --field "ref=refs/tags/${version}" \
+            --field "sha=${tag_sha}" \
+            --silent
