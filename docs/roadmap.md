@@ -439,34 +439,49 @@ Explicitly excluded:
 
 Status: implemented and audit-gated.
 
-## v0.12 Release Publication Readiness
+## v0.12 Usability and Proof Release
 
-Goal: make the first published release credible before shipping binaries.
+Goal: make Planwright understandable, runnable and reviewable in under five minutes.
+
+Strategic rule:
+- do not expand the feature surface unless the work directly improves the proof path
+- do not add another importer, generator or interface to look broader
+- make the existing engine easier to inspect, verify and explain
+- keep compatibility claims brutally tied to checked fixtures and loss evidence
 
 Scope:
-- checked-in release notes for each tag
-- release checklist with local verification commands
-- release workflow dry-run evidence
-- checksums
-- direct binary release assets
-- release-level SPDX and CycloneDX SBOM artefacts
-- human-controlled OpenPGP checksum manifest signatures
-- release signing key setup documentation
-- Linux, macOS and Windows binary verification
-- Docker image plan if it earns its place
-- clear compatibility and support policy for pre-1.0 releases
+- better README demo flow
+- one polished `examples/aws-webapp-basic` walkthrough
+- generated deployment pack walkthrough
+- real CLI transcript snippets from checked commands
+- Mermaid diagram preview or maintained screenshot only if the verification path is clear
+- one companion bad-example path such as public database exposure if it improves the proof story
+- clearer “what Planwright is not” section
+- generated evidence examples for validation, security notes, cost notes, Mermaid and pack layout
+- golden tests or fixture checks for the reports and generated artefacts used in public docs
+- documentation that explains why the local web workbench is not the future drag-and-drop canvas
 
 Exit criteria:
-- release verification can run locally without undocumented manual steps
-- release workflow dry-run output is captured or reproducible by maintainers
-- release notes and support policy do not claim published artefacts before they exist
-- release signatures can be verified from a documented maintainer-controlled trust root
-- SBOM placement is tied to release artefacts rather than checked-in source snapshots
+- a new user can install or build Planwright, run the canonical example and inspect generated evidence without guessing the command order
+- the canonical example has documented input, commands, expected outputs and limits
+- generated examples used in documentation are either checked by tests or clearly marked as illustrative
+- the README explains the current proof path before listing the full command surface
+- the docs state non-goals plainly enough that Planwright is not mistaken for a one-click deployer, universal converter, compliance tool or live cloud scanner
+- release notes describe usability and evidence improvements rather than pretending this is a broad compatibility expansion
 
 Explicitly excluded:
-- Homebrew, winget or package-manager distribution
-- reproducible-build guarantee
-- hosted SaaS
+- new import families
+- new cloud providers
+- live AWS calls
+- credential loading
+- drag-and-drop GUI expansion
+- TUI work
+- custom policy packs
+- OPA/Rego integration
+- plugin SDK work
+- cost-estimation precision claims
+- compliance language
+- deployment execution
 
 ## v0.13 Golden Compatibility Fixture Suite
 

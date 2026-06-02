@@ -21,8 +21,10 @@ Planwright treats infrastructure conversion as a migration and evidence problem,
 - [Update](#update)
 - [Dependencies](#dependencies)
 - [Compile](#compile)
+- [Quick Proof Path](#quick-proof-path)
 - [Usage and Options](#usage-and-options)
 - [Examples](#examples)
+- [What Planwright Is Not](#what-planwright-is-not)
 - [Current Scope](#current-scope)
 - [Compatibility](#compatibility)
 - [Safety Boundaries](#safety-boundaries)
@@ -135,6 +137,27 @@ go build -o planwright.exe ./cmd/planwright
 .\planwright.exe version
 ```
 
+# QUICK PROOF PATH
+
+The quickest useful Planwright path is the AWS web application example:
+```bash
+go run ./cmd/planwright validate examples/aws-webapp-basic/planwright.yaml
+go run ./cmd/planwright risks examples/aws-webapp-basic/planwright.yaml
+go run ./cmd/planwright cost-notes examples/aws-webapp-basic/planwright.yaml
+go run ./cmd/planwright generate terraform examples/aws-webapp-basic/planwright.yaml --out ./generated/terraform
+go run ./cmd/planwright generate mermaid examples/aws-webapp-basic/planwright.yaml --out ./generated/diagrams
+go run ./cmd/planwright pack examples/aws-webapp-basic/planwright.yaml --out ./planwright-pack
+```
+
+That path produces:
+- validation output
+- Markdown security and cost notes
+- Terraform/OpenTofu-oriented review files
+- a Mermaid architecture diagram
+- a directory-based Planwright pack with a manifest, graph, reports, generated files and diagrams
+
+Read the full walkthrough in [examples/aws-webapp-basic/README.md](examples/aws-webapp-basic/README.md).
+
 # USAGE AND OPTIONS
 
 Planwright is CLI-first. The current command surface is:
@@ -164,6 +187,9 @@ planwright version
 Planned commands such as `tui`, `scan aws`, `generate kubernetes`, custom policy packs and OPA/Rego policy execution are not part of v0.11.
 
 # EXAMPLES
+
+Canonical walkthrough:
+- [examples/aws-webapp-basic/README.md](examples/aws-webapp-basic/README.md), the current v0.12 proof path
 
 Validate the example plan:
 ```bash
@@ -195,9 +221,23 @@ Start the current local browser workbench:
 go run ./cmd/planwright serve . --addr 127.0.0.1:5786
 ```
 
+# WHAT PLANWRIGHT IS NOT
+
+Planwright is not:
+- a one-click deployment console
+- a live cloud account scanner in the current implementation
+- a Terraform or OpenTofu runner
+- a Kubernetes cluster client
+- a compliance certification tool
+- a lossless universal IaC converter
+- a drag-and-drop cloud diagrammer in the current local web workbench
+- a replacement for infrastructure review, threat modelling, cost review or deployment planning
+
+The current value is local evidence generation. Planwright should make infrastructure easier to inspect before deployment; it should not hide uncertainty behind compatibility claims.
+
 # CURRENT SCOPE
 
-Planwright is in the v0.11 rename, roadmap, UI and hardening stage.
+Planwright is in the v0.12 usability and proof stage. The immediate focus is making the existing engine easy to understand, run and review through one polished proof path rather than expanding the feature surface.
 
 Current implemented surfaces:
 - Go CLI

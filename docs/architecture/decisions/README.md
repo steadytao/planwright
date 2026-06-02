@@ -33,6 +33,7 @@ ADR | Decision | Status
 [`0010`](0010-policy-profile-boundary.md) | Policy profile boundary | accepted
 [`0011`](0011-diagnostics-sarif-and-exit-code-stability.md) | Diagnostics, SARIF and exit code stability | accepted
 [`0012`](0012-human-controlled-release-signing.md) | Human-controlled release signing | accepted
+[`0013`](0013-proof-before-expansion.md) | Proof before expansion | accepted
 
 # Status
 

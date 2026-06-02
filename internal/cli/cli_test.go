@@ -430,6 +430,149 @@ func TestRunCostNotesPrintsCostReport(t *testing.T) {
 	}
 }
 
+func TestRunAWSWebappProofPath(t *testing.T) {
+	t.Parallel()
+
+	root := t.TempDir()
+	terraformOut := filepath.Join(root, "terraform")
+	diagramsOut := filepath.Join(root, "diagrams")
+	packOut := filepath.Join(root, "pack")
+
+	for _, step := range []struct {
+		name string
+		args []string
+		want []string
+	}{
+		{
+			name: "validate",
+			args: []string{"validate", examplePlanPath()},
+			want: []string{"validation passed"},
+		},
+		{
+			name: "risks",
+			args: []string{"risks", examplePlanPath()},
+			want: []string{"# Security Report", "No public database exposure was detected"},
+		},
+		{
+			name: "cost-notes",
+			args: []string{"cost-notes", examplePlanPath()},
+			want: []string{"# Cost Notes", "NAT Gateway is not generated in the lab profile"},
+		},
+		{
+			name: "generate terraform",
+			args: []string{"generate", "terraform", examplePlanPath(), "--out", terraformOut},
+			want: []string{"wrote Terraform/OpenTofu files to"},
+		},
+		{
+			name: "generate mermaid",
+			args: []string{"generate", "mermaid", examplePlanPath(), "--out", diagramsOut},
+			want: []string{"wrote Mermaid files to"},
+		},
+		{
+			name: "pack",
+			args: []string{"pack", examplePlanPath(), "--out", packOut},
+			want: []string{"wrote Planwright pack to"},
+		},
+	} {
+		var stdout bytes.Buffer
+		var stderr bytes.Buffer
+		exitCode := Run(context.Background(), step.args, &stdout, &stderr)
+		if exitCode != ExitOK {
+			t.Fatalf("Run(%s) exitCode = %d, want %d; stdout=%q stderr=%q", step.name, exitCode, ExitOK, stdout.String(), stderr.String())
+		}
+		for _, want := range step.want {
+			if !strings.Contains(stdout.String(), want) {
+				t.Fatalf("Run(%s) stdout = %q, want %q", step.name, stdout.String(), want)
+			}
+		}
+	}
+
+	for _, path := range []string{
+		filepath.Join(terraformOut, "README.md"),
+		filepath.Join(terraformOut, "network.tf"),
+		filepath.Join(terraformOut, "security-groups.tf"),
+		filepath.Join(terraformOut, "database.tf"),
+		filepath.Join(diagramsOut, "architecture.mmd"),
+		filepath.Join(packOut, "manifest.json"),
+		filepath.Join(packOut, "planwright.graph.json"),
+		filepath.Join(packOut, "reports", "security-report.md"),
+		filepath.Join(packOut, "reports", "cost-notes.md"),
+		filepath.Join(packOut, "reports", "deployability-report.md"),
+		filepath.Join(packOut, "reports", "cleanup.md"),
+		filepath.Join(packOut, "generated", "terraform", "README.md"),
+		filepath.Join(packOut, "diagrams", "architecture.mmd"),
+	} {
+		if _, err := os.Stat(path); err != nil {
+			t.Fatalf("proof-path file %s missing: %v", path, err)
+		}
+	}
+
+	assertFileContains(t, filepath.Join(packOut, "manifest.json"), `"schema": "planwright.pack.v1"`)
+	assertFileContains(t, filepath.Join(packOut, "manifest.json"), `"requires_review": true`)
+}
+
+func TestRunAWSWebappPublicDatabaseRiskFixture(t *testing.T) {
+	t.Parallel()
+
+	path := filepath.Join(t.TempDir(), "public-db.yaml")
+	writeTestFile(t, path, []byte(`
+version: planwright.v1
+provider: aws
+region: ap-southeast-2
+profile: lab
+
+components:
+  webapp:
+    pattern: aws.webapp.alb_ecs_rds
+    properties:
+      app_port: 8080
+      db_engine: postgres
+      db_public: true
+
+flows:
+  - from: internet
+    to: webapp.alb
+    kind: network.allow
+    protocol: tcp
+    port: 443
+    intent: public_https_entrypoint
+
+  - from: webapp.alb
+    to: webapp.app
+    kind: network.allow
+    protocol: tcp
+    port: 8080
+    intent: load_balancer_to_app
+
+  - from: webapp.app
+    to: webapp.db
+    kind: network.allow
+    protocol: tcp
+    port: 5432
+    intent: application_database_access
+`))
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	exitCode := Run(context.Background(), []string{"risks", path}, &stdout, &stderr)
+	if exitCode != ExitOK {
+		t.Fatalf("Run(risks public db) exitCode = %d, want %d; stdout=%q stderr=%q", exitCode, ExitOK, stdout.String(), stderr.String())
+	}
+	if !strings.Contains(stdout.String(), "HIGH PW-AWS-RDS-001") {
+		t.Fatalf("stdout = %q, want public database finding", stdout.String())
+	}
+
+	stdout.Reset()
+	stderr.Reset()
+	exitCode = Run(context.Background(), []string{"generate", "terraform", path, "--out", filepath.Join(t.TempDir(), "terraform")}, &stdout, &stderr)
+	if exitCode != ExitValidation {
+		t.Fatalf("Run(generate terraform public db) exitCode = %d, want %d; stdout=%q stderr=%q", exitCode, ExitValidation, stdout.String(), stderr.String())
+	}
+	if !strings.Contains(stderr.String(), "does not support publicly accessible database") {
+		t.Fatalf("stderr = %q, want public database generator refusal", stderr.String())
+	}
+}
+
 func TestRunPackWritesDeploymentPack(t *testing.T) {
 	t.Parallel()
 
