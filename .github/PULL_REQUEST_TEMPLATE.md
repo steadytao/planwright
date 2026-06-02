@@ -1,5 +1,3 @@
-# Pull Request
-
 ## Summary
 
 Describe the change clearly and directly.
