@@ -151,7 +151,7 @@ func TestTerraformReviewSARIFUsesRepositoryRelativeURI(t *testing.T) {
 		t.Fatalf("RenderTerraformReviewSARIF() error = %v", err)
 	}
 	uri := firstSARIFURI(t, data)
-	if strings.Contains(uri, string(filepath.Separator)) || strings.Contains(uri, ":") {
+	if strings.Contains(uri, "\\") || strings.Contains(uri, ":") {
 		t.Fatalf("SARIF URI = %q, want repository-relative slash path without drive or scheme", uri)
 	}
 	if uri != "fixtures/tfplan.json" {

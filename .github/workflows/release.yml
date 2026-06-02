@@ -51,6 +51,9 @@ jobs:
             release-assets.githubusercontent.com:443
             sum.golang.org:443
             uploads.github.com:443
+            archive.ubuntu.com:80
+            azure.archive.ubuntu.com:80
+            security.ubuntu.com:80
 
       - name: Checkout Repository
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -102,6 +105,17 @@ jobs:
           go version
           gpg --version
           gh --version
+
+      - name: Install ImageMagick
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends imagemagick librsvg2-bin
+          if command -v magick >/dev/null 2>&1; then
+            magick -version
+          else
+            convert -version
+          fi
 
       - name: Resolve Release Metadata
         id: metadata
