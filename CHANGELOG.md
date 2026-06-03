@@ -11,6 +11,7 @@ These changes are not yet a complete release note.
 
 ### Changed
 - Documented SLSA release provenance verification alongside GitHub artefact attestations and OpenPGP checksum verification.
+- Updated the Go toolchain pin to `go1.26.4` for standard-library vulnerability fixes reported by `govulncheck`.
 - Updated GitHub Actions pins to the latest checked SemVer tags.
 
 <details>
