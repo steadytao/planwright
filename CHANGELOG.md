@@ -11,6 +11,8 @@ These changes are not yet a complete release note.
 
 ### Changed
 - Documented SLSA release provenance verification alongside GitHub artefact attestations and OpenPGP checksum verification.
+- Reworked the post-v0.12 roadmap around fixture-backed compatibility, split Terraform/OpenTofu evidence gates and a narrower v1.0 stable core.
+- Removed the unpinned SLSA reusable workflow path so third-party GitHub Actions dependencies stay SHA-pinned.
 - Updated the Go toolchain pin to `go1.26.4` for standard-library vulnerability fixes reported by `govulncheck`.
 - Updated GitHub Actions pins to the latest checked SemVer tags.
 
