@@ -4,7 +4,15 @@ All notable project changes are tracked here. The project is pre-1.0; compatibil
 
 ## Unreleased
 
-No unreleased changes yet.
+These changes are not yet a complete release note.
+
+### Added
+- Added release-attached SLSA provenance as `planwright.intoto.jsonl`.
+
+### Changed
+- Documented SLSA release provenance verification alongside GitHub artefact attestations and OpenPGP checksum verification.
+- Updated the Go toolchain pin to `go1.26.4` for standard-library vulnerability fixes reported by `govulncheck`.
+- Updated GitHub Actions pins to the latest checked SemVer tags.
 
 <details>
 <summary><h2>v0.12.1</h2></summary>

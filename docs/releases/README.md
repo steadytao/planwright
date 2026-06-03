@@ -22,11 +22,9 @@ Each release workflow expects a file named after the tag:
 - generated changelog entries are appended by the release workflow
 - release notes must contain `<!-- changelog: do not remove this line or add a changelog -->`
 
-Planwright has no published release artefacts yet.
-
 The first planned published release is `v0.11.0`. Earlier version gates from `v0.0.1` through `v0.10.0` describe project-history milestones only. They were not published as GitHub releases because Planwright became a formal release-tracked project after the v0.11 hardening, governance and release-readiness work.
 
-`v0.12.0` was skipped before publication after release-tag automation needed adjustment. The next planned release note is `v0.12.1`.
+`v0.12.0` was skipped before publication after release-tag automation needed adjustment.
 
 Use [`checklist.md`](checklist.md) before tagging a release.
 
@@ -62,10 +60,11 @@ Each release should also attach:
 - `public.key`
 - `planwright_sbom.spdx.json`
 - `planwright_sbom.cdx.json`
+- `planwright.intoto.jsonl`
 
 Planwright signs checksum manifests rather than every binary file. This keeps the release asset list small while still covering every binary listed in the manifests.
 
-The release workflow also creates GitHub artefact attestations for the release assets. These attestations provide workflow-backed provenance by digest. They are separate from the OpenPGP checksum manifest signatures and do not replace the human-controlled release signing key.
+The release workflow also creates GitHub artefact attestations for the release assets and attaches SLSA provenance as `planwright.intoto.jsonl`. These provenance paths provide workflow-backed provenance by digest. They are separate from the OpenPGP checksum manifest signatures and do not replace the human-controlled release signing key.
 
 # SBOMs
 
@@ -90,7 +89,7 @@ sha256sum -c ./SHA2-256SUMS --ignore-missing
 
 # Release Provenance
 
-Planwright release assets are attested with GitHub artefact attestations after release integrity assets are verified and before the release is published.
+Planwright release assets are attested with GitHub artefact attestations after release integrity assets are verified and before the release is published. The release workflow also attaches `planwright.intoto.jsonl` through the SLSA generic generator after the release is published.
 
 Verify a Linux binary attestation:
 ```bash
@@ -102,7 +101,12 @@ Verify a Windows binary attestation:
 gh attestation verify ./planwright_windows_amd64.exe -R steadytao/planwright
 ```
 
-Attestations prove the release workflow provenance for the downloaded file digest. They do not prove that the binary is vulnerability-free, reproducible, deployable or reviewed by a human.
+Verify SLSA provenance with `slsa-verifier`:
+```bash
+slsa-verifier verify-artifact ./planwright_linux_amd64 --provenance-path ./planwright.intoto.jsonl --source-uri github.com/steadytao/planwright --source-tag <tag>
+```
+
+Attestations and SLSA provenance prove release workflow provenance for the downloaded file digest. They do not prove that the binary is vulnerability-free, reproducible, deployable or reviewed by a human.
 
 # Repository Boundary
 

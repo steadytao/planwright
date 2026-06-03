@@ -66,7 +66,7 @@ The signed manifests also cover release SBOM files when they are attached to the
 
 # Provenance Attestations
 
-Planwright release assets are also covered by GitHub artefact attestations created by the release workflow.
+Planwright release assets are also covered by GitHub artefact attestations created by the release workflow. Releases also attach SLSA provenance as `planwright.intoto.jsonl`.
 
 Verify the downloaded Linux binary attestation:
 ```bash
@@ -78,4 +78,9 @@ Verify the downloaded Windows binary attestation:
 gh attestation verify ./planwright_windows_amd64.exe -R steadytao/planwright
 ```
 
-The attestation path proves workflow-backed provenance for the file digest. It complements the human-controlled OpenPGP checksum signature but does not replace fingerprint verification of the release signing key.
+Verify the downloaded Linux binary against SLSA provenance:
+```bash
+slsa-verifier verify-artifact ./planwright_linux_amd64 --provenance-path ./planwright.intoto.jsonl --source-uri github.com/steadytao/planwright --source-tag <tag>
+```
+
+The attestation and SLSA paths prove workflow-backed provenance for the file digest. They complement the human-controlled OpenPGP checksum signature but do not replace fingerprint verification of the release signing key.

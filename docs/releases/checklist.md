@@ -117,8 +117,10 @@ Before publishing a signed release, confirm that:
 Before publishing a release, confirm that:
 - the release workflow has `id-token: write` and `attestations: write`
 - GitHub Artifact Attestations are generated for `dist/release-assets/*`
+- SLSA provenance is attached to the release as `planwright.intoto.jsonl`
 - `gh attestation verify ./planwright_linux_amd64 -R steadytao/planwright` succeeds against the published Linux binary
 - `gh attestation verify ./planwright_windows_amd64.exe -R steadytao/planwright` succeeds against the published Windows binary
+- `slsa-verifier verify-artifact ./planwright_linux_amd64 --provenance-path ./planwright.intoto.jsonl --source-uri github.com/steadytao/planwright --source-tag <tag>` succeeds against the published Linux binary
 - release notes and docs do not imply that attestations replace the OpenPGP checksum manifest signatures
 - release notes and docs do not imply that attestations prove vulnerability status, reproducibility, deployability or human review
 
