@@ -9,10 +9,6 @@ from pathlib import Path
 USES_RE = re.compile(r"^\s*(?:-\s*)?uses:\s*[\"']?([A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?:/[A-Za-z0-9_.-]+)*)@([0-9A-Za-z._/-]+)[\"']?(?:\s+#\s*(v[^\s]+))?\s*$")
 FULL_SHA_RE = re.compile(r"^[0-9a-f]{40}$")
 SEMVER_TAG_RE = re.compile(r"^refs/tags/(v(\d+)\.(\d+)\.(\d+))$")
-SEMVER_VALUE_RE = re.compile(r"^v\d+\.\d+\.\d+$")
-TAG_REFERENCED_REUSABLE_WORKFLOWS = {
-  "slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml",
-}
 
 SemverTag = tuple[tuple[int, int, int], str]
 
@@ -103,23 +99,6 @@ def main() -> int:
       continue
 
     location = f"{workflow}:{line_number}"
-
-    if action_path in TAG_REFERENCED_REUSABLE_WORKFLOWS:
-      if not SEMVER_VALUE_RE.match(ref):
-        failures.append(f"{location}: {action_path}@{ref} must use a full SLSA SemVer tag such as v2.1.0")
-        continue
-
-      if owner_repo not in latest_cache:
-        try:
-          latest_cache[owner_repo] = resolve_latest_semver_tag(owner_repo)
-        except RuntimeError as exc:
-          failures.append(f"{location}: {exc}")
-          continue
-
-      latest_tag, _ = latest_cache[owner_repo]
-      if ref != latest_tag:
-        failures.append(f"{location}: {action_path} uses {ref} but the latest semver tag is {latest_tag}")
-      continue
 
     if not FULL_SHA_RE.match(ref):
       failures.append(f"{location}: {action_path}@{ref} is not pinned to a full 40-character SHA")

@@ -64,7 +64,7 @@ Each release should also attach:
 
 Planwright signs checksum manifests rather than every binary file. This keeps the release asset list small while still covering every binary listed in the manifests.
 
-The release workflow also creates GitHub artefact attestations for the release assets and attaches SLSA provenance as `planwright.intoto.jsonl`. These provenance paths provide workflow-backed provenance by digest. They are separate from the OpenPGP checksum manifest signatures and do not replace the human-controlled release signing key.
+The release workflow also creates GitHub artefact attestations for the release assets and attaches the generated SLSA provenance bundle as `planwright.intoto.jsonl`. These provenance paths provide workflow-backed provenance by digest. They are separate from the OpenPGP checksum manifest signatures and do not replace the human-controlled release signing key.
 
 # SBOMs
 
@@ -89,7 +89,7 @@ sha256sum -c ./SHA2-256SUMS --ignore-missing
 
 # Release Provenance
 
-Planwright release assets are attested with GitHub artefact attestations after release integrity assets are verified and before the release is published. The release workflow also attaches `planwright.intoto.jsonl` through the SLSA generic generator after the release is published.
+Planwright release assets are attested with GitHub artefact attestations after release integrity assets are verified and before the release is published. The release workflow also attaches the generated provenance bundle as `planwright.intoto.jsonl`.
 
 Verify a Linux binary attestation:
 ```bash
@@ -101,9 +101,9 @@ Verify a Windows binary attestation:
 gh attestation verify ./planwright_windows_amd64.exe -R steadytao/planwright
 ```
 
-Verify SLSA provenance with `slsa-verifier`:
+Verify the downloaded Linux binary against the attached provenance bundle:
 ```bash
-slsa-verifier verify-artifact ./planwright_linux_amd64 --provenance-path ./planwright.intoto.jsonl --source-uri github.com/steadytao/planwright --source-tag <tag>
+gh attestation verify ./planwright_linux_amd64 -R steadytao/planwright --bundle ./planwright.intoto.jsonl
 ```
 
 Attestations and SLSA provenance prove release workflow provenance for the downloaded file digest. They do not prove that the binary is vulnerability-free, reproducible, deployable or reviewed by a human.

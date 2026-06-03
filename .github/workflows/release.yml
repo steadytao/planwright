@@ -24,8 +24,6 @@ jobs:
     name: Build, Sign and Publish Release
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    outputs:
-      slsa_subjects: ${{ steps.slsa_subjects.outputs.base64_subjects }}
     environment:
       name: release
     permissions:
@@ -337,23 +335,22 @@ jobs:
           )
 
       - name: Generate Release Provenance Attestations
+        id: provenance
         uses: actions/attest@59d89421af93a897026c735860bf21b6eb4f7b26 # v4.1.0
         with:
-          subject-path: dist/release-assets/*
+          subject-checksums: dist/release-assets/SHA2-256SUMS
 
-      - name: Prepare SLSA Provenance Subjects
-        id: slsa_subjects
+      - name: Attach Release Provenance Bundle
         run: |
           set -euo pipefail
 
-          subjects_file="$RUNNER_TEMP/slsa-subjects.txt"
-          find dist/release-assets -maxdepth 1 -type f -printf '%f\0' |
-            sort -z |
-            while IFS= read -r -d '' asset; do
-              sha256sum "dist/release-assets/${asset}" | sed 's#dist/release-assets/##'
-            done > "$subjects_file"
+          bundle="${{ steps.provenance.outputs.bundle-path }}"
+          if [ ! -s "$bundle" ]; then
+            echo "Error: release provenance bundle was not created"
+            exit 1
+          fi
 
-          printf 'base64_subjects=%s\n' "$(base64 -w0 "$subjects_file")" >> "$GITHUB_OUTPUT"
+          cp "$bundle" dist/release-assets/planwright.intoto.jsonl
 
       - name: Publish Release
         env:
@@ -366,17 +363,3 @@ jobs:
             --title "${{ steps.metadata.outputs.release_name }}" \
             --notes-file "${{ steps.release_notes.outputs.generated_release_notes_file }}" \
             --verify-tag
-
-  slsa-provenance:
-    name: Generate SLSA Release Provenance
-    needs: release
-    permissions:
-      actions: read
-      contents: write
-      id-token: write
-    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
-    with:
-      base64-subjects: ${{ needs.release.outputs.slsa_subjects }}
-      provenance-name: planwright.intoto.jsonl
-      upload-assets: true
-      upload-tag-name: ${{ github.ref_name }}

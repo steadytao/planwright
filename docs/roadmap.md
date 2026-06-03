@@ -488,73 +488,135 @@ Explicitly excluded:
 Goal: make compatibility claims testable before adding more broad surface area.
 
 Scope:
-- fixture runner for importers, generators and reports
-- fixture metadata for supported source format, expected capability level and expected loss categories
-- golden tests for Terraform/OpenTofu, CloudFormation, SAM, Mermaid, Markdown and SARIF outputs where those paths already exist
-- malformed input fixtures
-- unsupported construct fixtures
-- lossy conversion fixtures
-- round-trip tests only where the compatibility level claims round-trip support
+- fixture metadata schema for supported source format, command surface, expected compatibility level and expected loss categories
+- fixture runner for importers, generators, reports, graph validation, graph diff and policy review
+- golden tests for existing Terraform/OpenTofu-oriented generated files, CloudFormation import, SAM import, Kubernetes/Gateway/Cilium import, AWS scan bundle import, Mermaid output, Markdown reports and SARIF output where those paths already exist
+- canonical `aws-webapp-basic` fixture covering validation, graph lowering, security report, cost notes, Mermaid output, Terraform/OpenTofu-oriented output and pack output
+- companion public-database fixture covering risk reporting and Terraform/OpenTofu generator refusal
+- malformed input fixtures for every current local file input surface
+- unsupported construct fixtures for CloudFormation, SAM, Kubernetes/Gateway/Cilium and AWS scan bundle import paths
+- lossy conversion fixtures proving that preserved, normalised, inferred, ambiguous, unsupported, unsafe and manual-review-required categories remain visible
+- release-evidence checks for GitHub artefact attestations and release-attached SLSA provenance as `planwright.intoto.jsonl`
 - public compatibility matrix generated or checked from fixture metadata
+- deliberate golden-update workflow requiring an explicit update flag or environment variable
+- documentation for adding fixtures, updating golden outputs and interpreting compatibility levels
+- ADR for fixture-backed compatibility claims
 
 Exit criteria:
 - every current compatibility matrix row is backed by at least one fixture or explicitly marked as documentation-only
-- unsupported and ambiguous fixture cases produce visible loss evidence
-- no new compatibility level can be raised without a fixture update
+- every public proof-path output used in the README or example docs is fixture-backed or clearly marked as illustrative
+- unsupported, ambiguous and unsafe fixture cases produce visible loss evidence
+- release evidence docs distinguish OpenPGP checksum signatures, GitHub artefact attestations and release-attached SLSA provenance
+- no compatibility level can be raised without a fixture metadata update
+- golden outputs are deterministic across repeated test runs
+- SARIF outputs used in fixtures validate against the supported SARIF schema
+- fixture documentation explains when golden outputs may be updated and what review is required
 
 Explicitly excluded:
 - broad service coverage without fixtures
+- new import families
+- new generators
+- live cloud scans
+- credential loading
 - deployability testing
+- round-trip claims unless a fixture proves the claimed round trip
 - invisible compatibility claims in docs
+- retroactive changes to already-published release assets
 
-## v0.14 Terraform/OpenTofu State and Provider Schema Import
+## v0.14 Terraform/OpenTofu State JSON Import
 
-Goal: make Terraform/OpenTofu compatibility more than plan-review evidence.
+Goal: make Terraform/OpenTofu compatibility more than plan-review evidence without taking on provider schema complexity too early.
 
 Scope:
-- `terraform show -json` state import
-- OpenTofu-compatible state import where the JSON format matches supported fields
+- `terraform show -json` state import from local files
+- OpenTofu-compatible state import where the JSON shape matches supported fields
 - resource inventory extraction from state JSON
-- prior-state and planned-value comparison where both are present
-- sensitive value tracking and redaction
-- provider schema ingestion from `terraform providers schema -json`
-- compatibility reports tied to provider/resource schemas
+- sensitive value detection and redaction from state values where sensitivity metadata is available
+- unsupported provider/resource reporting
+- malformed, empty, sensitive and unsupported state fixtures
+- Markdown loss report output
+- graph JSON output only for the supported subset if deterministic node identity is ready; otherwise inventory and loss report only
+- compatibility matrix updates backed by fixtures
 
 Exit criteria:
-- state JSON fixtures cover empty, malformed, sensitive and unsupported resources
-- provider schema fixtures prove that sensitivity metadata is preserved in reports
-- Terraform and OpenTofu paths share code where the supported JSON shape is equivalent
+- Terraform and OpenTofu state fixtures cover empty state, malformed JSON, unsupported provider resources, sensitive attributes and a small supported AWS subset
+- sensitive values are never printed in reports, graph properties or diagnostics
+- state import does not evaluate HCL, execute Terraform/OpenTofu or load provider plugins
+- compatibility docs state the boundary between state inventory, graph lowering and deployability
 
 Explicitly excluded:
-- full HCL module interpreter
-- Terraform expression evaluation
+- Terraform HCL/module evaluation
+- provider schema ingestion
 - provider plugin execution
 - Terraform/OpenTofu apply
-- automatic import-block generation unless separately designed
+- Terraform/OpenTofu plan comparison to graph
+- automatic import-block generation
+- live cloud account calls
 
-## v0.15 Terraform/OpenTofu Graph Lowering
+## v0.15 Terraform/OpenTofu Provider Schema Evidence
+
+Goal: ingest provider schema JSON as local evidence so sensitivity, unsupported attributes and resource-shape ambiguity can be reported more accurately.
+
+Scope:
+- local `terraform providers schema -json` input
+- OpenTofu-compatible provider schema input where the JSON shape matches supported fields
+- provider/resource/attribute inventory extraction
+- sensitivity metadata preservation
+- unsupported resource and attribute reporting
+- provider schema compatibility report
+- fixtures for missing schema, malformed schema, unsupported provider, sensitive attributes and supported AWS resource attributes
+- shared Terraform/OpenTofu JSON helpers where the state and schema shapes are equivalent
+- documentation explaining that schema ingestion is evidence, not provider execution
+
+Exit criteria:
+- provider schema fixtures prove that sensitivity metadata is preserved in reports
+- provider schema ingestion never executes provider plugins
+- missing or incomplete schema data is treated as unknown rather than safe
+- state and provider-schema paths share code where the supported JSON shape is equivalent
+- compatibility claims distinguish state import, schema evidence and graph lowering
+
+Explicitly excluded:
+- provider plugin execution
+- downloading providers
+- Terraform/OpenTofu init
+- HCL expression evaluation
+- complete provider coverage
+- automatic remediation
+- deployability proof
+
+## v0.16 Terraform/OpenTofu Graph Lowering
 
 Goal: lower supported Terraform/OpenTofu plan and state resources into `planwright.graph.v1`.
 
 Scope:
-- supported AWS resource mapping to graph nodes
+- supported AWS resource mapping from Terraform/OpenTofu plan JSON and state JSON into graph nodes
 - selected relationship inference from IDs, references and security group rules
-- destructive-change graph annotations
-- drift-ish comparison between prior and planned state
-- Markdown and SARIF review improvements
-- loss and confidence reporting for unknown, computed and sensitive values
+- destructive-change graph annotations where plan JSON contains replacement or delete actions
+- prior-state and planned-value comparison where both are present
+- loss and confidence reporting for unknown, computed, sensitive and unsupported values
+- provider-schema-assisted reporting where schema evidence is available
+- Markdown and SARIF review improvements tied to stable rule IDs
+- graph fixtures with deterministic node and edge IDs for the supported AWS subset
+- compatibility matrix updates backed by fixtures
 
 Exit criteria:
 - supported AWS resources lower into graph fixtures with deterministic node and edge IDs
 - sensitive, unknown and computed values are never silently treated as known safe values
 - graph lowering has loss reports for unsupported provider resources and attributes
+- destructive, replacement and public-exposure findings remain visible after lowering
+- plan, state and schema evidence boundaries are documented separately
+- no Terraform/OpenTofu compatibility level is raised without fixture evidence
 
 Explicitly excluded:
 - lossless Terraform-to-Planwright conversion
 - direct Terraform HCL module execution
 - provider-specific coverage beyond declared support
+- provider plugin execution
+- Terraform/OpenTofu apply
+- automatic import-block generation
+- deployability proof
 
-## v0.16 Deployment Pack v1
+## v0.17 Deployment Pack v1
 
 Goal: make the pack a business-credible evidence artefact.
 
@@ -567,19 +629,27 @@ Scope:
 - diagrams folder for Mermaid, future D2 and future Graphviz
 - scripts folder for identity checks, plan commands, verification and destroy guidance
 - manifest file hashes and generated hash list
+- deterministic pack fixtures for the canonical AWS web application proof path
+- source preservation rules for redacted and unsupported input sources
+- pack documentation explaining what is evidence, what is generated output and what still requires human review
 
 Exit criteria:
 - pack manifest has a tested `planwright.pack.v1` shape
 - pack output is deterministic for the same input
 - source preservation never stores credentials or secret values that Planwright has redacted
 - generated scripts are review aids only and are never run by the pack command
+- every generated folder included in a pack is backed by the current compatibility matrix
+- pack documentation is clear enough that the pack is not mistaken for a deployable artefact
 
 Explicitly excluded:
 - storing secrets
 - executing generated scripts
 - claiming deployability without sandbox evidence
+- making zip archives the only pack format
+- live cloud scans
+- cloud mutation
 
-## v0.17 Examples Gallery and Documentation Site
+## v0.18 Examples Gallery and Documentation Site
 
 Goal: make examples teachable and reviewable using real engine output.
 
@@ -588,15 +658,18 @@ Scope:
 - `examples/aws-webapp-bad-public-db`
 - `examples/aws-serverless-sam-import`
 - `examples/terraform-plan-risk-review`
+- `examples/terraform-state-inventory`
 - `examples/cloudformation-to-terraform-loss-report`
 - `examples/kubernetes-gateway-basic`
-- `examples/docker-compose-import`
+- `examples/aws-scan-bundle-basic`
 - `examples/small-business-web-stack`
 - `examples/student-lab-low-cost`
 - expected findings for each example
 - generated outputs and reports for examples where checked-in output is justified
 - static documentation site content sourced from checked-in docs
 - screenshots only where maintained by an explicit verification process
+- fixture-backed example index
+- documentation explaining how each example maps to the compatibility matrix
 
 Each example must document:
 - what it creates or represents
@@ -607,24 +680,31 @@ Each example must document:
 - verification steps
 - destroy guidance
 - what Planwright could not infer
+- compatibility level and fixture coverage
+- whether generated outputs are checked by tests or illustrative only
 
 Exit criteria:
 - every example has commands, expected findings and scope boundaries
 - documentation site content does not overclaim beyond the checked-in implementation
 - examples are exercised by tests where practical
+- no example claims support for an importer, generator or provider that is not in the compatibility matrix
+- Docker Compose is not shown as implemented before its post-v1.0 gate
 
 Explicitly excluded:
 - hosted demo deployment
+- Docker Compose examples before Docker Compose support exists
 - screenshots without a maintained verification process
 - generated output snapshots that cannot be kept deterministic
+- live cloud credentials
+- deployment execution
 
-## v0.18 CI Review Action and SARIF Hardening
+## v0.19 CI Review Action and SARIF Hardening
 
 Goal: make pull request review practical while keeping machine-readable findings stable.
 
 Scope:
 - GitHub Action wrapper
-- Planwright graph, Terraform plan and policy profile review in CI
+- Planwright graph, Terraform plan, Terraform state, policy profile and compatibility fixture review in CI where supported
 - SARIF upload path
 - Markdown PR comment summary
 - stable exit codes
@@ -634,19 +714,26 @@ Scope:
 - stable rule IDs
 - source location support where importers can provide it
 - baseline and suppression strategy discussion
+- example workflows for local-only and CI-only review modes
+- least-privilege permission documentation
 
 Exit criteria:
 - Action examples follow least-privilege GitHub token permissions
 - SARIF output validates against the supported schema in tests
 - rule IDs and exit codes are documented as compatibility-sensitive
+- CI examples do not require cloud credentials by default
+- PR comment summaries are deterministic and avoid leaking secrets or raw sensitive values
+- baseline and suppression behaviour is documented as review aid behaviour, not compliance approval
 
 Explicitly excluded:
 - cloud credentials by default
 - cloud mutation
 - secret display
 - unstable rule IDs after release without documented compatibility impact
+- hosted service dependency
+- automatic remediation
 
-## v0.19 Security and Accessibility Hardening
+## v0.20 Security and Accessibility Hardening
 
 Goal: document and test every current trust boundary before declaring a stable core.
 
@@ -660,6 +747,8 @@ Scope:
 - archive extraction safety before zip pack input is added
 - secret redaction tests
 - generated artefact secret scanning checks
+- Terraform/OpenTofu state and provider schema input safety tests
+- pack source-preservation safety tests
 - keyboard-first local web flows
 - screen-reader graph summary for the current workbench
 - high-contrast and focus-visible checks
@@ -667,15 +756,22 @@ Scope:
 - reduced-motion compatibility
 - ARIA live validation region where it improves the current workbench
 - Playwright accessibility smoke checks if a browser test harness is added
+- accessibility statement describing current support and non-claims
 
 Exit criteria:
-- threat model matches the implemented CLI, importer, server and release surfaces
+- threat model matches the implemented CLI, importer, server, pack, fixture and release surfaces
 - local web security tests cover loopback, Host, CORS and request-size boundaries
+- file, directory, archive and symlink boundaries are covered by tests where implemented
+- generated artefacts do not print known secret values from supported input paths
 - accessibility docs distinguish target practices from formal audit claims
+- release notes identify this as hardening, not a formal security or accessibility certification
 
 Explicitly excluded:
 - weakening local-only defaults for convenience
 - claiming formal accessibility certification without an audit
+- browser-triggered credential use
+- live cloud scans
+- deployment execution
 
 ## v1.0 Stable Core
 
@@ -685,7 +781,9 @@ Requirements:
 - stable `planwright.graph.v1` schema and compatibility policy
 - stable `planwright.pack.v1` pack format
 - declared compatibility matrix generated or checked from tested fixtures
+- fixture-backed compatibility claims for every supported current surface
 - signed releases through a documented human-controlled trust root
+- GitHub artefact attestations and release-attached SLSA provenance for release assets
 - checksums
 - SBOMs beside release artefacts when the release tooling supports them
 - security policy
@@ -699,6 +797,7 @@ Requirements:
 - offline mode
 - stable exit codes
 - stable diagnostics policy
+- stable SARIF rule ID policy
 - full release-candidate security and correctness pass
 
 Explicitly excluded at v1.0 unless separately approved:
@@ -710,6 +809,7 @@ Explicitly excluded at v1.0 unless separately approved:
 - live mutation from browser
 - live cloud scans as a stability requirement
 - broad generator coverage beyond fixture-backed support
+- compliance certification
 
 ## Post-v1.0 Expansion Gates
 
