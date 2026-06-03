@@ -24,6 +24,8 @@ jobs:
     name: Build, Sign and Publish Release
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    outputs:
+      slsa_subjects: ${{ steps.slsa_subjects.outputs.base64_subjects }}
     environment:
       name: release
     permissions:
@@ -61,7 +63,7 @@ jobs:
             security.ubuntu.com:80
 
       - name: Checkout Repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
           persist-credentials: false
@@ -339,6 +341,20 @@ jobs:
         with:
           subject-path: dist/release-assets/*
 
+      - name: Prepare SLSA Provenance Subjects
+        id: slsa_subjects
+        run: |
+          set -euo pipefail
+
+          subjects_file="$RUNNER_TEMP/slsa-subjects.txt"
+          find dist/release-assets -maxdepth 1 -type f -printf '%f\0' |
+            sort -z |
+            while IFS= read -r -d '' asset; do
+              sha256sum "dist/release-assets/${asset}" | sed 's#dist/release-assets/##'
+            done > "$subjects_file"
+
+          printf 'base64_subjects=%s\n' "$(base64 -w0 "$subjects_file")" >> "$GITHUB_OUTPUT"
+
       - name: Publish Release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -350,3 +366,17 @@ jobs:
             --title "${{ steps.metadata.outputs.release_name }}" \
             --notes-file "${{ steps.release_notes.outputs.generated_release_notes_file }}" \
             --verify-tag
+
+  slsa-provenance:
+    name: Generate SLSA Release Provenance
+    needs: release
+    permissions:
+      actions: read
+      contents: write
+      id-token: write
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_generic_slsa3.yml@v2.1.0
+    with:
+      base64-subjects: ${{ needs.release.outputs.slsa_subjects }}
+      provenance-name: planwright.intoto.jsonl
+      upload-assets: true
+      upload-tag-name: ${{ github.ref_name }}
