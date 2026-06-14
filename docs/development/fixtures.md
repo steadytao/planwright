@@ -29,6 +29,7 @@ schema: planwright.fixture.v1
 id: aws-webapp-basic
 name: AWS web application basic proof path
 source_format: planwright.yaml
+source_kind: file
 source_path: planwright.yaml
 compatibility_level: 5
 expected_loss_categories: []
@@ -44,6 +45,7 @@ Fields:
 - `schema` must be `planwright.fixture.v1`
 - `id` must be stable and unique in the fixture suite
 - `source_format` names the supported source surface being exercised
+- `source_kind` may be `file` or `directory`; omitted means `file`
 - `source_path` must be a relative slash-separated path inside the fixture directory
 - `compatibility_level` must be between `0` and `8`
 - `expected_loss_categories` records visible loss evidence for the fixture
@@ -64,6 +66,8 @@ Command arguments may use these placeholders:
 - `${source}`, the source file path resolved from `source_path`
 - `${fixture}`, the fixture directory
 - `${temp}`, a temporary output directory for the current test run
+
+Directory source fixtures may use `source_path: .` when the fixture directory itself is the input bundle. File source fixtures must name a concrete file.
 
 Command expectations may check:
 - exit code

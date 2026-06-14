@@ -1,0 +1,18 @@
+schema: planwright.fixture.v1
+id: terraform-plan-risk-review
+name: Terraform plan risk review fixture
+source_format: terraform-plan-json
+source_path: tfplan.json
+compatibility_level: 2
+expected_loss_categories:
+  - manual-review-required
+commands:
+  - name: review Terraform plan
+    args: ["review", "terraform-plan", "${source}", "--out", "${temp}/terraform-review.md", "--sarif", "${temp}/terraform-review.sarif"]
+    want_exit: 0
+    want_stdout_contains:
+      - wrote Terraform plan review to
+      - wrote Terraform plan SARIF to
+    want_files:
+      - "${temp}/terraform-review.md"
+      - "${temp}/terraform-review.sarif"

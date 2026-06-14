@@ -30,6 +30,18 @@ func TestValidateAcceptsBasicAWSWebAppGraph(t *testing.T) {
 	}
 }
 
+func TestNormalizeSlicesMakesNilSlicesEmpty(t *testing.T) {
+	t.Parallel()
+
+	g := NormalizeSlices(Graph{})
+	if g.Nodes == nil {
+		t.Fatalf("NormalizeSlices(Graph{}).Nodes is nil, want empty slice")
+	}
+	if g.Edges == nil {
+		t.Fatalf("NormalizeSlices(Graph{}).Edges is nil, want empty slice")
+	}
+}
+
 func TestValidateRejectsMissingRegion(t *testing.T) {
 	t.Parallel()
 

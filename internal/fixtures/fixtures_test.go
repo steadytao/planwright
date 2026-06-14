@@ -131,6 +131,92 @@ commands:
 	}
 }
 
+func TestLoadFileAcceptsDirectorySource(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	bundle := filepath.Join(dir, "bundle")
+	if err := os.Mkdir(bundle, 0o700); err != nil {
+		t.Fatalf("Mkdir(%q) error = %v", bundle, err)
+	}
+	writeFixtureTestFile(t, filepath.Join(dir, "fixture.yaml"), []byte(`
+schema: planwright.fixture.v1
+id: directory-source
+name: Directory source fixture
+source_format: awsscan.bundle
+source_kind: directory
+source_path: bundle
+compatibility_level: 4
+commands:
+  - name: import
+    args: ["import", "awsscan", "${source}", "--out", "${temp}/graph.json", "--loss-report", "${temp}/loss.md"]
+    want_exit: 0
+`))
+
+	fixture, err := LoadFile(filepath.Join(dir, "fixture.yaml"))
+	if err != nil {
+		t.Fatalf("LoadFile(directory source) error = %v", err)
+	}
+	if got, want := fixture.Source(), bundle; got != want {
+		t.Fatalf("fixture.Source() = %q, want %q", got, want)
+	}
+}
+
+func TestLoadFileAcceptsCurrentDirectorySource(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	writeFixtureTestFile(t, filepath.Join(dir, "fixture.yaml"), []byte(`
+schema: planwright.fixture.v1
+id: current-directory-source
+name: Current directory source fixture
+source_format: awsscan.bundle
+source_kind: directory
+source_path: .
+compatibility_level: 4
+commands:
+  - name: import
+    args: ["import", "awsscan", "${source}", "--out", "${temp}/graph.json", "--loss-report", "${temp}/loss.md"]
+    want_exit: 0
+`))
+
+	fixture, err := LoadFile(filepath.Join(dir, "fixture.yaml"))
+	if err != nil {
+		t.Fatalf("LoadFile(current directory source) error = %v", err)
+	}
+	if got, want := fixture.Source(), filepath.Clean(dir); got != want {
+		t.Fatalf("fixture.Source() = %q, want %q", got, want)
+	}
+}
+
+func TestLoadFileRejectsUnknownSourceKind(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	writeFixtureTestFile(t, filepath.Join(dir, "planwright.yaml"), []byte("version: planwright.v1\n"))
+	writeFixtureTestFile(t, filepath.Join(dir, "fixture.yaml"), []byte(`
+schema: planwright.fixture.v1
+id: bad-kind
+name: Bad kind fixture
+source_format: planwright.yaml
+source_kind: stream
+source_path: planwright.yaml
+compatibility_level: 1
+commands:
+  - name: validate
+    args: ["validate", "${source}"]
+    want_exit: 0
+`))
+
+	_, err := LoadFile(filepath.Join(dir, "fixture.yaml"))
+	if err == nil {
+		t.Fatalf("LoadFile(unknown source kind) error = nil, want error")
+	}
+	if !strings.Contains(err.Error(), "source_kind must be file or directory") {
+		t.Fatalf("LoadFile(unknown source kind) error = %v, want source kind refusal", err)
+	}
+}
+
 func TestCommandExpectationExpandsPaths(t *testing.T) {
 	t.Parallel()
 

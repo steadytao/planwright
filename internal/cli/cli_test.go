@@ -591,31 +591,27 @@ func TestRunExampleCompatibilityFixtures(t *testing.T) {
 
 			tempDir := t.TempDir()
 			for _, command := range fixture.Commands {
-				t.Run(command.Name, func(t *testing.T) {
-					t.Parallel()
-
-					var stdout bytes.Buffer
-					var stderr bytes.Buffer
-					exitCode := Run(context.Background(), command.ExpandArgs(fixture, tempDir), &stdout, &stderr)
-					if exitCode != command.WantExit {
-						t.Fatalf("Run(%s/%s) exitCode = %d, want %d; stdout=%q stderr=%q", fixture.ID, command.Name, exitCode, command.WantExit, stdout.String(), stderr.String())
+				var stdout bytes.Buffer
+				var stderr bytes.Buffer
+				exitCode := Run(context.Background(), command.ExpandArgs(fixture, tempDir), &stdout, &stderr)
+				if exitCode != command.WantExit {
+					t.Fatalf("Run(%s/%s) exitCode = %d, want %d; stdout=%q stderr=%q", fixture.ID, command.Name, exitCode, command.WantExit, stdout.String(), stderr.String())
+				}
+				for _, want := range command.WantStdoutContains {
+					if !strings.Contains(stdout.String(), want) {
+						t.Fatalf("Run(%s/%s) stdout = %q, want %q", fixture.ID, command.Name, stdout.String(), want)
 					}
-					for _, want := range command.WantStdoutContains {
-						if !strings.Contains(stdout.String(), want) {
-							t.Fatalf("Run(%s/%s) stdout = %q, want %q", fixture.ID, command.Name, stdout.String(), want)
-						}
+				}
+				for _, want := range command.WantStderrContains {
+					if !strings.Contains(stderr.String(), want) {
+						t.Fatalf("Run(%s/%s) stderr = %q, want %q", fixture.ID, command.Name, stderr.String(), want)
 					}
-					for _, want := range command.WantStderrContains {
-						if !strings.Contains(stderr.String(), want) {
-							t.Fatalf("Run(%s/%s) stderr = %q, want %q", fixture.ID, command.Name, stderr.String(), want)
-						}
+				}
+				for _, path := range command.ExpectedFiles(tempDir) {
+					if _, err := os.Stat(path); err != nil {
+						t.Fatalf("Run(%s/%s) expected file %s missing: %v", fixture.ID, command.Name, path, err)
 					}
-					for _, path := range command.ExpectedFiles(tempDir) {
-						if _, err := os.Stat(path); err != nil {
-							t.Fatalf("Run(%s/%s) expected file %s missing: %v", fixture.ID, command.Name, path, err)
-						}
-					}
-				})
+				}
 			}
 		})
 	}

@@ -1,0 +1,24 @@
+schema: planwright.fixture.v1
+id: cloudformation-basic
+name: CloudFormation basic import fixture
+source_format: cloudformation
+source_path: template.yaml
+compatibility_level: 4
+expected_loss_categories:
+  - unsupported
+  - ambiguous
+commands:
+  - name: import CloudFormation
+    args: ["import", "cloudformation", "${source}", "--out", "${temp}/cloudformation.graph.json", "--loss-report", "${temp}/cloudformation-loss.md"]
+    want_exit: 0
+    want_stdout_contains:
+      - imported cloudformation template to
+      - wrote loss report to
+    want_files:
+      - "${temp}/cloudformation.graph.json"
+      - "${temp}/cloudformation-loss.md"
+  - name: validate imported graph
+    args: ["validate-graph", "${temp}/cloudformation.graph.json"]
+    want_exit: 0
+    want_stdout_contains:
+      - graph validation passed
