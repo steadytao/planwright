@@ -16,3 +16,5 @@ commands:
     want_files:
       - "${temp}/terraform-review.md"
       - "${temp}/terraform-review.sarif"
+    want_sarif_files:
+      - "${temp}/terraform-review.sarif"
