@@ -1,0 +1,23 @@
+schema: planwright.fixture.v1
+id: sam-basic
+name: SAM basic import fixture
+source_format: sam
+source_path: template.yaml
+compatibility_level: 4
+expected_loss_categories:
+  - preserved
+commands:
+  - name: import SAM
+    args: ["import", "sam", "${source}", "--out", "${temp}/sam.graph.json", "--loss-report", "${temp}/sam-loss.md"]
+    want_exit: 0
+    want_stdout_contains:
+      - imported sam template to
+      - wrote loss report to
+    want_files:
+      - "${temp}/sam.graph.json"
+      - "${temp}/sam-loss.md"
+  - name: validate imported graph
+    args: ["validate-graph", "${temp}/sam.graph.json"]
+    want_exit: 0
+    want_stdout_contains:
+      - graph validation passed

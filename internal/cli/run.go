@@ -604,6 +604,7 @@ func writeImportOutputs(stdout io.Writer, stderr io.Writer, graphPath string, lo
 		write(stdout, reports.RenderDiagnostics(diagnostics))
 		return ExitValidation
 	}
+	importedGraph = graph.NormalizeSlices(importedGraph)
 	graphData, err := json.MarshalIndent(importedGraph, "", "  ")
 	if err != nil {
 		writef(stderr, "render graph: %v\n", err)

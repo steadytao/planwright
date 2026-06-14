@@ -52,3 +52,13 @@ func HasBlockingDiagnostics(diagnostics []Diagnostic) bool {
 	}
 	return false
 }
+
+func NormalizeSlices(g Graph) Graph {
+	if g.Nodes == nil {
+		g.Nodes = []Node{}
+	}
+	if g.Edges == nil {
+		g.Edges = []Edge{}
+	}
+	return g
+}

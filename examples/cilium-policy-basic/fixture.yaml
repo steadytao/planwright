@@ -1,0 +1,23 @@
+schema: planwright.fixture.v1
+id: cilium-policy-basic
+name: Cilium policy basic import fixture
+source_format: kubernetes.yaml
+source_path: manifests.yaml
+compatibility_level: 4
+expected_loss_categories:
+  - unsupported
+commands:
+  - name: import Cilium manifests
+    args: ["import", "k8s", "${source}", "--out", "${temp}/cilium.graph.json", "--loss-report", "${temp}/cilium-loss.md"]
+    want_exit: 0
+    want_stdout_contains:
+      - imported k8s manifests to
+      - wrote loss report to
+    want_files:
+      - "${temp}/cilium.graph.json"
+      - "${temp}/cilium-loss.md"
+  - name: validate imported graph
+    args: ["validate-graph", "${temp}/cilium.graph.json"]
+    want_exit: 0
+    want_stdout_contains:
+      - graph validation passed

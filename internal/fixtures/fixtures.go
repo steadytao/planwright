@@ -37,6 +37,7 @@ type Fixture struct {
 	ID                     string               `yaml:"id"`
 	Name                   string               `yaml:"name"`
 	SourceFormat           string               `yaml:"source_format"`
+	SourceKind             string               `yaml:"source_kind"`
 	SourcePath             string               `yaml:"source_path"`
 	CompatibilityLevel     int                  `yaml:"compatibility_level"`
 	ExpectedLossCategories []string             `yaml:"expected_loss_categories"`
@@ -119,18 +120,24 @@ func (fixture Fixture) Validate() error {
 	if strings.TrimSpace(fixture.SourceFormat) == "" {
 		errs = append(errs, errors.New("source_format must not be empty"))
 	}
+	sourceKind := fixture.sourceKind()
+	if sourceKind != "file" && sourceKind != "directory" {
+		errs = append(errs, fmt.Errorf("source_kind must be file or directory"))
+	}
 	if fixture.CompatibilityLevel < 0 || fixture.CompatibilityLevel > 8 {
 		errs = append(errs, fmt.Errorf("compatibility_level must be between 0 and 8"))
 	}
-	if err := validateLocalSlashPath("source_path", fixture.SourcePath); err != nil {
+	if err := validateSourcePath("source_path", fixture.SourcePath, sourceKind == "directory"); err != nil {
 		errs = append(errs, err)
 	} else if fixture.dir != "" {
 		source := fixture.Source()
 		info, err := os.Lstat(source)
 		if err != nil {
 			errs = append(errs, fmt.Errorf("source_path %q is not readable: %w", fixture.SourcePath, err))
-		} else if !info.Mode().IsRegular() {
+		} else if sourceKind == "file" && !info.Mode().IsRegular() {
 			errs = append(errs, fmt.Errorf("source_path %q must be a regular file", fixture.SourcePath))
+		} else if sourceKind == "directory" && !info.IsDir() {
+			errs = append(errs, fmt.Errorf("source_path %q must be a directory", fixture.SourcePath))
 		}
 	}
 	for _, category := range fixture.ExpectedLossCategories {
@@ -145,6 +152,13 @@ func (fixture Fixture) Validate() error {
 		errs = append(errs, command.validate(index)...)
 	}
 	return errors.Join(errs...)
+}
+
+func (fixture Fixture) sourceKind() string {
+	if strings.TrimSpace(fixture.SourceKind) == "" {
+		return "file"
+	}
+	return fixture.SourceKind
 }
 
 func (command CommandExpectation) ExpandArgs(fixture Fixture, tempDir string) []string {
@@ -187,7 +201,7 @@ func (command CommandExpectation) validate(index int) []error {
 	return errs
 }
 
-func validateLocalSlashPath(field string, value string) error {
+func validateSourcePath(field string, value string, allowCurrentDirectory bool) error {
 	if strings.TrimSpace(value) == "" {
 		return fmt.Errorf("%s must not be empty", field)
 	}
@@ -195,6 +209,9 @@ func validateLocalSlashPath(field string, value string) error {
 		return fmt.Errorf("%s %q must be a relative slash-separated path", field, value)
 	}
 	clean := path.Clean(value)
+	if clean == "." && allowCurrentDirectory {
+		return nil
+	}
 	if clean == "." || clean == ".." || strings.HasPrefix(clean, "../") {
 		return fmt.Errorf("%s %q must stay inside the fixture directory", field, value)
 	}
@@ -206,5 +223,5 @@ func validateTemplatePath(field string, value string) error {
 		return fmt.Errorf("%s must not contain an empty path", field)
 	}
 	withoutTemp := strings.ReplaceAll(value, "${temp}", "temp")
-	return validateLocalSlashPath(field, withoutTemp)
+	return validateSourcePath(field, withoutTemp, false)
 }
