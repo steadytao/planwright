@@ -1,0 +1,14 @@
+schema: planwright.fixture.v1
+id: malformed-graph
+name: Malformed graph JSON fixture
+source_format: planwright.graph.json
+source_path: graph.txt
+compatibility_level: 0
+expected_loss_categories: []
+commands:
+  - name: reject malformed graph
+    args: ["validate-graph", "${source}"]
+    want_exit: 2
+    want_stdout_contains:
+      - "PW-GRAPH-JSON-001"
+      - "graph validation failed"

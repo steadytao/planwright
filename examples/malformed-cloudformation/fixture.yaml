@@ -1,0 +1,13 @@
+schema: planwright.fixture.v1
+id: malformed-cloudformation
+name: Malformed CloudFormation fixture
+source_format: cloudformation
+source_path: template.txt
+compatibility_level: 0
+expected_loss_categories: []
+commands:
+  - name: reject malformed CloudFormation
+    args: ["import", "cloudformation", "${source}", "--out", "${temp}/cloudformation.graph.json", "--loss-report", "${temp}/cloudformation-loss.md"]
+    want_exit: 2
+    want_stderr_contains:
+      - "import cloudformation: parse"
