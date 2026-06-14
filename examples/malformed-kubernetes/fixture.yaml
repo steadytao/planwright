@@ -1,0 +1,13 @@
+schema: planwright.fixture.v1
+id: malformed-kubernetes
+name: Malformed Kubernetes manifest fixture
+source_format: kubernetes.yaml
+source_path: manifests.txt
+compatibility_level: 0
+expected_loss_categories: []
+commands:
+  - name: reject malformed Kubernetes manifest
+    args: ["import", "k8s", "${source}", "--out", "${temp}/kubernetes.graph.json", "--loss-report", "${temp}/kubernetes-loss.md"]
+    want_exit: 2
+    want_stderr_contains:
+      - "import k8s: parse"

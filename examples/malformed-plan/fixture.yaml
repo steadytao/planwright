@@ -1,0 +1,13 @@
+schema: planwright.fixture.v1
+id: malformed-plan
+name: Malformed Planwright plan fixture
+source_format: planwright.yaml
+source_path: planwright.txt
+compatibility_level: 0
+expected_loss_categories: []
+commands:
+  - name: reject malformed plan
+    args: ["validate", "${source}"]
+    want_exit: 2
+    want_stderr_contains:
+      - "load plan: parse"

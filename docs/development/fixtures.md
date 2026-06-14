@@ -15,6 +15,7 @@ Use fixtures for:
 - supported local source formats
 - supported command surfaces
 - expected compatibility levels
+- malformed input refusal
 - visible loss categories
 - diagnostics and findings
 - generated files where the output is part of the claim
@@ -93,6 +94,7 @@ Future golden file updates should require an explicit update flag or environment
 
 When adding or changing a fixture:
 - keep the source input minimal
+- use `compatibility_level: 0` for malformed input fixtures that only prove safe refusal
 - include unsupported or lossy constructs when the compatibility claim depends on loss reporting
 - avoid credentials, tokens and real account identifiers
 - avoid live cloud calls

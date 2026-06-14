@@ -1,0 +1,13 @@
+schema: planwright.fixture.v1
+id: malformed-terraform-plan
+name: Malformed Terraform plan JSON fixture
+source_format: terraform-plan-json
+source_path: tfplan.txt
+compatibility_level: 0
+expected_loss_categories: []
+commands:
+  - name: reject malformed Terraform plan
+    args: ["review", "terraform-plan", "${source}", "--out", "${temp}/terraform-review.md", "--sarif", "${temp}/terraform-review.sarif"]
+    want_exit: 2
+    want_stderr_contains:
+      - "review terraform-plan: parse"

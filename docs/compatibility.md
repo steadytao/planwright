@@ -24,16 +24,16 @@ Level | Meaning
 
 Format | Import | Analyse | Generate | Round-trip | Deploy tested | Fixture evidence
 :--- | :--- | :--- | :--- | :--- | :--- | :---
-Planwright YAML | Level 4 for one AWS web application pattern | Basic validation, security and cost notes | Level 5 review artefacts for Terraform/OpenTofu, Mermaid and Markdown reports | Not yet | No | `aws-webapp-basic`, `aws-webapp-public-db`
-Terraform/OpenTofu plan JSON | Level 2 for resource change inventory | v0.3 review findings for destructive changes, replacement, public RDS and unknown security values | SARIF and Markdown review output | No | No | `terraform-plan-risk-review`
+Planwright YAML | Level 4 for one AWS web application pattern | Basic validation, security and cost notes | Level 5 review artefacts for Terraform/OpenTofu, Mermaid and Markdown reports | Not yet | No | `aws-webapp-basic`, `aws-webapp-public-db`, `malformed-plan`
+Terraform/OpenTofu plan JSON | Level 2 for resource change inventory | v0.3 review findings for destructive changes, replacement, public RDS and unknown security values | SARIF and Markdown review output | No | No | `terraform-plan-risk-review`, `malformed-terraform-plan`
 Terraform/OpenTofu state JSON | Not yet | Not yet | Not yet | No | No | Documentation-only until v0.14 fixtures exist
-CloudFormation | Level 4 for a small AWS resource subset with loss reports | Basic graph validation after import | Not yet | No | No | `cloudformation-basic`
-SAM | Level 4 for `Function`, `HttpApi` and `SimpleTable` with loss reports | Basic graph validation after import | Not yet | No | No | `sam-basic`
-Kubernetes YAML | Level 4 for a rendered-manifest subset | Basic graph validation plus route relationship inference for Services, Ingress and Gateway API routes | Not yet | No | No | `kubernetes-gateway-basic`, `cilium-policy-basic`
+CloudFormation | Level 4 for a small AWS resource subset with loss reports | Basic graph validation after import | Not yet | No | No | `cloudformation-basic`, `malformed-cloudformation`
+SAM | Level 4 for `Function`, `HttpApi` and `SimpleTable` with loss reports | Basic graph validation after import | Not yet | No | No | `sam-basic`, `malformed-sam`
+Kubernetes YAML | Level 4 for a rendered-manifest subset | Basic graph validation plus route relationship inference for Services, Ingress and Gateway API routes | Not yet | No | No | `kubernetes-gateway-basic`, `cilium-policy-basic`, `malformed-kubernetes`
 Gateway API manifests | Level 4 for Gateway and HTTPRoute/TCPRoute/TLSRoute inventory | Route parent/backend relationship inference for the supported subset | Not yet | No | No | `kubernetes-gateway-basic`
 Cilium policies | Level 4 inventory with semantic loss notes | Policy presence and scope notes only | Not yet | No | No | `cilium-policy-basic`
-AWS scan bundle JSON | Level 4 for a local AWS CLI JSON subset | Basic graph validation plus security-group public ingress and reference inference | Not yet | No | No | `aws-scan-bundle-basic`
-Planwright graph JSON | Level 1 structural schema validation | JSON Schema 2020-12 plus semantic graph validation | Schema export and graph diff input | No | No | Documentation-only until graph JSON fixtures are split from importer fixtures
+AWS scan bundle JSON | Level 4 for a local AWS CLI JSON subset | Basic graph validation plus security-group public ingress and reference inference | Not yet | No | No | `aws-scan-bundle-basic`, `malformed-awsscan`
+Planwright graph JSON | Level 1 structural schema validation | JSON Schema 2020-12 plus semantic graph validation | Schema export and graph diff input | No | No | `malformed-graph`
 Planwright graph JSON diff | Local graph JSON comparison only | Added, removed and changed nodes or edges plus selected risk-increasing changes | Markdown diff review | No | No | Documentation-only until graph diff fixtures exist
 Planwright policy profiles | Local graph JSON input only | Built-in `lab`, `small-business` and `production` static checks | Markdown and SARIF review output | No | No | Documentation-only until policy profile fixtures exist
 
