@@ -97,6 +97,6 @@ When adding or changing a fixture:
 - avoid credentials, tokens and real account identifiers
 - avoid live cloud calls
 - avoid generated artefacts unless they are deterministic and intentionally checked in
-- update [`../compatibility.md`](../compatibility.md) only when the fixture supports the claim
+- update [`../compatibility.md`](../compatibility.md) only when the fixture supports the claim; the current matrix must reference real fixture IDs or an explicit documentation-only marker
 - run `go test ./...`
 - run `go run ./cmd/planwright docs check .`
