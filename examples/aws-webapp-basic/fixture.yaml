@@ -1,0 +1,54 @@
+schema: planwright.fixture.v1
+id: aws-webapp-basic
+name: AWS web application basic proof path
+source_format: planwright.yaml
+source_path: planwright.yaml
+compatibility_level: 5
+expected_loss_categories: []
+commands:
+  - name: validate
+    args: ["validate", "${source}"]
+    want_exit: 0
+    want_stdout_contains:
+      - validation passed
+  - name: security report
+    args: ["risks", "${source}"]
+    want_exit: 0
+    want_stdout_contains:
+      - "# Security Report"
+      - No public database exposure was detected
+  - name: cost notes
+    args: ["cost-notes", "${source}"]
+    want_exit: 0
+    want_stdout_contains:
+      - "# Cost Notes"
+      - NAT Gateway is not generated in the lab profile
+  - name: Terraform/OpenTofu output
+    args: ["generate", "terraform", "${source}", "--out", "${temp}/terraform"]
+    want_exit: 0
+    want_stdout_contains:
+      - wrote Terraform/OpenTofu files to
+    want_files:
+      - "${temp}/terraform/README.md"
+      - "${temp}/terraform/network.tf"
+      - "${temp}/terraform/security-groups.tf"
+      - "${temp}/terraform/database.tf"
+  - name: Mermaid output
+    args: ["generate", "mermaid", "${source}", "--out", "${temp}/diagrams"]
+    want_exit: 0
+    want_stdout_contains:
+      - wrote Mermaid files to
+    want_files:
+      - "${temp}/diagrams/architecture.mmd"
+  - name: deployment pack
+    args: ["pack", "${source}", "--out", "${temp}/pack"]
+    want_exit: 0
+    want_stdout_contains:
+      - wrote Planwright pack to
+    want_files:
+      - "${temp}/pack/manifest.json"
+      - "${temp}/pack/planwright.graph.json"
+      - "${temp}/pack/reports/security-report.md"
+      - "${temp}/pack/reports/cost-notes.md"
+      - "${temp}/pack/generated/terraform/README.md"
+      - "${temp}/pack/diagrams/architecture.mmd"

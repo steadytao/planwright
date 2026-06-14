@@ -52,6 +52,7 @@ Behaviour changes should include tests for:
 - CLI exit status where relevant
 - local web server security headers, Host handling, body limits and malformed browser input where relevant
 - documentation style, British-English spelling and spellchecker configuration
+- compatibility fixture metadata and command expectations for public compatibility claims
 - GitHub Actions pinning, script quality, file headers and contributor metadata
 
 Security-sensitive changes should include negative tests. Examples include path traversal, archive safety, credential handling, generated scripts, local HTTP boundaries and live scan controls.

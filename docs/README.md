@@ -8,6 +8,7 @@ Planwright documentation is split by purpose. Start with the README for user-fac
 - [architecture/design.md](architecture/design.md), product boundary and engine shape
 - [architecture/threat-model.md](architecture/threat-model.md), current trust boundaries and controls
 - [architecture/decisions/](architecture/decisions/), Architecture Decision Records
+- [development/fixtures.md](development/fixtures.md), compatibility fixture metadata and review rules
 - [development/standards.md](development/standards.md), coding and documentation standards
 - [development/testing.md](development/testing.md), testing expectations and fuzzing policy
 - [releases/README.md](releases/README.md), release notes, release assets and integrity model
@@ -26,6 +27,7 @@ For a quick project review:
 
 For maintenance work:
 - read [development/standards.md](development/standards.md)
+- read [development/fixtures.md](development/fixtures.md)
 - read [development/testing.md](development/testing.md)
 - read [architecture/decisions/](architecture/decisions/)
 - read [releases/README.md](releases/README.md)
