@@ -1,0 +1,24 @@
+schema: planwright.fixture.v1
+id: terraform-state-unsupported
+name: Unsupported Terraform state resource fixture
+source_format: terraform-state-json
+source_path: state.json
+compatibility_level: 2
+expected_loss_categories:
+  - unsupported
+commands:
+  - name: review unsupported Terraform state resource
+    args: ["review", "terraform-state", "${source}", "--out", "${temp}/terraform-state.md", "--loss-report", "${temp}/terraform-state-loss.md"]
+    want_exit: 0
+    want_files:
+      - "${temp}/terraform-state.md"
+      - "${temp}/terraform-state-loss.md"
+    want_file_contains:
+      - path: "${temp}/terraform-state.md"
+        contains:
+          - "google_compute_instance.app"
+          - "unsupported"
+      - path: "${temp}/terraform-state-loss.md"
+        contains:
+          - "## Unsupported"
+          - "google_compute_instance.app"

@@ -1,0 +1,28 @@
+schema: planwright.fixture.v1
+id: terraform-state-inventory
+name: Terraform state inventory fixture
+source_format: terraform-state-json
+source_path: state.json
+compatibility_level: 2
+expected_loss_categories:
+  - preserved
+commands:
+  - name: review Terraform state
+    args: ["review", "terraform-state", "${source}", "--out", "${temp}/terraform-state.md", "--loss-report", "${temp}/terraform-state-loss.md"]
+    want_exit: 0
+    want_stdout_contains:
+      - wrote Terraform state inventory to
+      - wrote Terraform state loss report to
+    want_files:
+      - "${temp}/terraform-state.md"
+      - "${temp}/terraform-state-loss.md"
+    want_file_contains:
+      - path: "${temp}/terraform-state.md"
+        contains:
+          - "# Terraform State Inventory"
+          - "aws_db_instance.app"
+          - "password"
+      - path: "${temp}/terraform-state-loss.md"
+        contains:
+          - "## Preserved"
+          - "aws_db_instance.app"

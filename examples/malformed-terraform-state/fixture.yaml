@@ -1,0 +1,13 @@
+schema: planwright.fixture.v1
+id: malformed-terraform-state
+name: Malformed Terraform state JSON fixture
+source_format: terraform-state-json
+source_path: state.txt
+compatibility_level: 0
+expected_loss_categories: []
+commands:
+  - name: reject malformed Terraform state
+    args: ["review", "terraform-state", "${source}", "--out", "${temp}/terraform-state.md", "--loss-report", "${temp}/terraform-state-loss.md"]
+    want_exit: 2
+    want_stderr_contains:
+      - "review terraform-state: parse"

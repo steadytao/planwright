@@ -24,6 +24,7 @@ Before a release, confirm that Planwright can:
 - run `planwright import k8s examples/kubernetes-gateway-basic/manifests.yaml --out <graph.json> --loss-report <loss.md>`
 - run `planwright import awsscan examples/aws-scan-bundle-basic --out <graph.json> --loss-report <loss.md>`
 - run `planwright review terraform-plan examples/terraform-plan-risk-review/tfplan.json --out <review.md> --sarif <planwright.sarif>`
+- run `planwright review terraform-state examples/terraform-state-inventory/state.json --out <inventory.md> --loss-report <loss.md>`
 - run `planwright schema graph --out <schema.json>`
 - run `planwright validate-graph <planwright.graph.json>`
 - run `planwright policy profiles`

@@ -34,15 +34,15 @@ If this file appears to conflict with those documents, follow the canonical docu
 
 ## Project Stage
 
-Planwright is in the v0.13 fixture-backed compatibility stage.
+Planwright is in the v0.14 Terraform/OpenTofu state inventory stage.
 
-The next high-value work is to make the existing compatibility matrix auditable through fixtures, release evidence and honest documentation before adding broader Terraform/OpenTofu, provider or generator surface area. Do not add broad features merely because they appear in the long-term roadmap.
+The next high-value work is to make local Terraform/OpenTofu state JSON inventory useful without crossing into provider schema ingestion, HCL evaluation, provider plugin execution or graph lowering. Do not add broad features merely because they appear in the long-term roadmap.
 
 Be especially careful not to:
 - write documentation as if stable releases already exist
 - imply that TUI, hosted demo, zip archives or live scans already exist unless the code proves it
 - imply that CloudFormation/SAM import is complete or lossless beyond the v0.2 supported subset
-- imply that Terraform review supports state import, provider schema ingestion, HCL evaluation or apply-time proof beyond the v0.3 plan JSON checks
+- imply that Terraform/OpenTofu support goes beyond v0.3 plan JSON checks and v0.14 state JSON inventory; provider schema ingestion, HCL evaluation and apply-time proof are not implemented
 - imply that Kubernetes import evaluates Helm templates, runs Kustomize, contacts a cluster, decodes Secret values or fully models NetworkPolicy/Cilium semantics beyond the v0.5 rendered-manifest subset
 - imply that AWS scan import contacts AWS, loads credentials, runs the AWS CLI, uses the AWS SDK, verifies live account identity or proves drift beyond the v0.6 local bundle subset
 - imply that graph diff review proves live infrastructure drift beyond the v0.7 local graph JSON comparison

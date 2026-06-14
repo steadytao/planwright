@@ -4,7 +4,9 @@ All notable project changes are tracked here. The project is pre-1.0; compatibil
 
 ## Unreleased
 
-No changes yet.
+### Added
+- Added Terraform/OpenTofu state JSON inventory review with Markdown inventory and loss reports.
+- Added Terraform state inventory, empty-state, unsupported-resource and malformed-state compatibility fixtures.
 
 <details>
 <summary><h2>v0.13.0</h2></summary>

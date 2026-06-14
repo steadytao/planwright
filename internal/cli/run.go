@@ -31,6 +31,7 @@ import (
 	"github.com/steadytao/planwright/internal/project"
 	"github.com/steadytao/planwright/internal/reports"
 	"github.com/steadytao/planwright/internal/review/terraformplan"
+	"github.com/steadytao/planwright/internal/review/terraformstate"
 	cloudserver "github.com/steadytao/planwright/internal/server"
 	"github.com/steadytao/planwright/internal/version"
 )
@@ -460,6 +461,8 @@ func runReview(args []string, stdout io.Writer, stderr io.Writer) int {
 	switch args[0] {
 	case "terraform-plan":
 		return runReviewTerraformPlan(args[1:], stdout, stderr)
+	case "terraform-state":
+		return runReviewTerraformState(args[1:], stdout, stderr)
 	case "-h", "--help", "help":
 		printReviewUsage(stdout)
 		return ExitOK
@@ -498,6 +501,33 @@ func runReviewTerraformPlan(args []string, stdout io.Writer, stderr io.Writer) i
 	}
 	writef(stdout, "wrote Terraform plan review to %s\n", reviewPath)
 	writef(stdout, "wrote Terraform plan SARIF to %s\n", sarifPath)
+	return ExitOK
+}
+
+func runReviewTerraformState(args []string, stdout io.Writer, stderr io.Writer) int {
+	statePath, inventoryPath, lossPath, ok := parseReviewStateArgs(args, stderr, printReviewTerraformStateUsage)
+	if !ok {
+		return ExitUsage
+	}
+	if !pathsAreDistinct(stderr, namedPath{"Terraform state JSON", statePath}, namedPath{"inventory", inventoryPath}, namedPath{"loss report", lossPath}) {
+		return ExitUsage
+	}
+	result, err := terraformstate.ReviewFile(statePath)
+	if err != nil {
+		writef(stderr, "review terraform-state: %v\n", err)
+		return ExitValidation
+	}
+	if err := project.WriteFile(inventoryPath, []byte(reports.RenderTerraformStateInventory(result))); err != nil {
+		writef(stderr, "write Terraform state inventory: %v\n", err)
+		return ExitUnsafe
+	}
+	lossReport := reports.TerraformStateLossReport(result)
+	if err := project.WriteFile(lossPath, []byte(reports.RenderLossReport(lossReport))); err != nil {
+		writef(stderr, "write Terraform state loss report: %v\n", err)
+		return ExitUnsafe
+	}
+	writef(stdout, "wrote Terraform state inventory to %s\n", inventoryPath)
+	writef(stdout, "wrote Terraform state loss report to %s\n", lossPath)
 	return ExitOK
 }
 
@@ -845,6 +875,15 @@ func parseReviewArgs(args []string, stderr io.Writer, printUsage func(io.Writer)
 	return args[0], args[2], args[4], true
 }
 
+func parseReviewStateArgs(args []string, stderr io.Writer, printUsage func(io.Writer)) (string, string, string, bool) {
+	if len(args) != 5 || args[1] != "--out" || args[3] != "--loss-report" {
+		writeln(stderr, "review terraform-state requires <state.json> --out <inventory.md> --loss-report <loss.md>")
+		printUsage(stderr)
+		return "", "", "", false
+	}
+	return args[0], args[2], args[4], true
+}
+
 func parseDiffArgs(args []string, stderr io.Writer) (string, string, string, bool) {
 	if len(args) != 4 || args[2] != "--out" {
 		writeln(stderr, "diff requires <old.graph.json> <new.graph.json> --out <review.md>")
@@ -1012,6 +1051,7 @@ func printUsage(w io.Writer) {
 	writeln(w, "  planwright policy graph <planwright.graph.json> --profile <profile> --out <policy.md> --sarif <policy.sarif>")
 	writeln(w, "  planwright pack <planwright.yaml> --out <dir>")
 	writeln(w, "  planwright review terraform-plan <tfplan.json> --out <review.md> --sarif <planwright.sarif>")
+	writeln(w, "  planwright review terraform-state <state.json> --out <inventory.md> --loss-report <loss.md>")
 	writeln(w, "  planwright serve [project-dir] [--addr 127.0.0.1:5786]")
 	writeln(w, "  planwright version")
 }
@@ -1098,11 +1138,17 @@ func printPackUsage(w io.Writer) {
 func printReviewUsage(w io.Writer) {
 	writeln(w, "Usage:")
 	writeln(w, "  planwright review terraform-plan <tfplan.json> --out <review.md> --sarif <planwright.sarif>")
+	writeln(w, "  planwright review terraform-state <state.json> --out <inventory.md> --loss-report <loss.md>")
 }
 
 func printReviewTerraformPlanUsage(w io.Writer) {
 	writeln(w, "Usage:")
 	writeln(w, "  planwright review terraform-plan <tfplan.json> --out <review.md> --sarif <planwright.sarif>")
+}
+
+func printReviewTerraformStateUsage(w io.Writer) {
+	writeln(w, "Usage:")
+	writeln(w, "  planwright review terraform-state <state.json> --out <inventory.md> --loss-report <loss.md>")
 }
 
 func printSchemaUsage(w io.Writer) {

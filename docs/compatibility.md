@@ -26,7 +26,7 @@ Format | Import | Analyse | Generate | Round-trip | Deploy tested | Fixture evid
 :--- | :--- | :--- | :--- | :--- | :--- | :---
 Planwright YAML | Level 4 for one AWS web application pattern | Basic validation, security and cost notes | Level 5 review artefacts for Terraform/OpenTofu, Mermaid and Markdown reports | Not yet | No | `aws-webapp-basic`, `aws-webapp-public-db`, `malformed-plan`
 Terraform/OpenTofu plan JSON | Level 2 for resource change inventory | v0.3 review findings for destructive changes, replacement, public RDS and unknown security values | SARIF and Markdown review output | No | No | `terraform-plan-risk-review`, `malformed-terraform-plan`
-Terraform/OpenTofu state JSON | Not yet | Not yet | Not yet | No | No | Documentation-only until v0.14 fixtures exist
+Terraform/OpenTofu state JSON | Level 2 for resource inventory from local state JSON | Inventory and loss report only | Markdown inventory and loss report | No | No | `terraform-state-inventory`, `terraform-state-empty`, `terraform-state-unsupported`, `malformed-terraform-state`
 CloudFormation | Level 4 for a small AWS resource subset with loss reports | Basic graph validation after import | Not yet | No | No | `cloudformation-basic`, `unsupported-cloudformation`, `malformed-cloudformation`
 SAM | Level 4 for `Function`, `HttpApi` and `SimpleTable` with loss reports | Basic graph validation after import | Not yet | No | No | `sam-basic`, `unsupported-sam`, `malformed-sam`
 Kubernetes YAML | Level 4 for a rendered-manifest subset | Basic graph validation plus route relationship inference for Services, Ingress and Gateway API routes | Not yet | No | No | `kubernetes-gateway-basic`, `cilium-policy-basic`, `unsupported-kubernetes`, `malformed-kubernetes`
@@ -186,6 +186,23 @@ It supports:
 The v0.9 policy checks cover selected graph risks only: public databases, internet-facing SSH/RDP, missing database backup evidence in stricter profiles, production observability evidence and applying production checks to a lab-profile graph.
 
 They do not run custom policy files, execute OPA/Rego, contact cloud APIs, inspect live infrastructure, prove deployability or certify compliance.
+
+## v0.14 Terraform/OpenTofu State JSON Inventory
+
+Planwright v0.14 reads local JSON produced by `terraform show -json <STATE FILE>` or compatible OpenTofu state JSON.
+
+It reviews:
+- root and child module resources under `values.root_module`
+- resource address, mode, type, name and provider name
+- selected AWS resource types as supported inventory evidence
+- unsupported provider or resource types as loss-report evidence
+- sensitive attribute paths from `sensitive_values`
+
+It writes:
+- a Markdown state inventory report
+- a Markdown loss report
+
+It does not evaluate HCL, inspect provider schemas, load provider plugins, run Terraform/OpenTofu, import state into a provider, lower state resources into `planwright.graph.v1`, compare state to plans or prove deployability. Sensitive state values are not printed by the inventory or loss report.
 
 ## Compatibility Rule
 
