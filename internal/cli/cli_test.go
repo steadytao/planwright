@@ -13,6 +13,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/steadytao/planwright/internal/fixtures"
 	"github.com/steadytao/planwright/internal/localfs"
 )
 
@@ -570,6 +571,53 @@ flows:
 	}
 	if !strings.Contains(stderr.String(), "does not support publicly accessible database") {
 		t.Fatalf("stderr = %q, want public database generator refusal", stderr.String())
+	}
+}
+
+func TestRunExampleCompatibilityFixtures(t *testing.T) {
+	t.Parallel()
+
+	metadata, err := fixtures.Discover(filepath.Join("..", "..", "examples"))
+	if err != nil {
+		t.Fatalf("Discover(examples) error = %v", err)
+	}
+	if len(metadata) == 0 {
+		t.Fatalf("Discover(examples) returned no fixtures")
+	}
+
+	for _, fixture := range metadata {
+		t.Run(fixture.ID, func(t *testing.T) {
+			t.Parallel()
+
+			tempDir := t.TempDir()
+			for _, command := range fixture.Commands {
+				t.Run(command.Name, func(t *testing.T) {
+					t.Parallel()
+
+					var stdout bytes.Buffer
+					var stderr bytes.Buffer
+					exitCode := Run(context.Background(), command.ExpandArgs(fixture, tempDir), &stdout, &stderr)
+					if exitCode != command.WantExit {
+						t.Fatalf("Run(%s/%s) exitCode = %d, want %d; stdout=%q stderr=%q", fixture.ID, command.Name, exitCode, command.WantExit, stdout.String(), stderr.String())
+					}
+					for _, want := range command.WantStdoutContains {
+						if !strings.Contains(stdout.String(), want) {
+							t.Fatalf("Run(%s/%s) stdout = %q, want %q", fixture.ID, command.Name, stdout.String(), want)
+						}
+					}
+					for _, want := range command.WantStderrContains {
+						if !strings.Contains(stderr.String(), want) {
+							t.Fatalf("Run(%s/%s) stderr = %q, want %q", fixture.ID, command.Name, stderr.String(), want)
+						}
+					}
+					for _, path := range command.ExpectedFiles(tempDir) {
+						if _, err := os.Stat(path); err != nil {
+							t.Fatalf("Run(%s/%s) expected file %s missing: %v", fixture.ID, command.Name, path, err)
+						}
+					}
+				})
+			}
+		})
 	}
 }
 

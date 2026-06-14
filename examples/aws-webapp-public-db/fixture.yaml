@@ -1,0 +1,19 @@
+schema: planwright.fixture.v1
+id: aws-webapp-public-db
+name: AWS web application public database risk fixture
+source_format: planwright.yaml
+source_path: planwright.yaml
+compatibility_level: 4
+expected_loss_categories:
+  - unsafe
+commands:
+  - name: security report
+    args: ["risks", "${source}"]
+    want_exit: 0
+    want_stdout_contains:
+      - HIGH PW-AWS-RDS-001
+  - name: Terraform/OpenTofu generator refusal
+    args: ["generate", "terraform", "${source}", "--out", "${temp}/terraform"]
+    want_exit: 2
+    want_stderr_contains:
+      - does not support publicly accessible database
