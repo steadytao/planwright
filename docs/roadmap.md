@@ -555,6 +555,8 @@ Explicitly excluded:
 - automatic import-block generation
 - live cloud account calls
 
+Status: in progress; local inventory and loss-report review implemented for the first state JSON slice.
+
 ## v0.15 Terraform/OpenTofu Provider Schema Evidence
 
 Goal: ingest provider schema JSON as local evidence so sensitivity, unsupported attributes and resource-shape ambiguity can be reported more accurately.

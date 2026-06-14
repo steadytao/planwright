@@ -1061,6 +1061,55 @@ func TestRunReviewTerraformPlanRejectsDuplicateOutputPaths(t *testing.T) {
 	}
 }
 
+func TestRunReviewTerraformStateWritesInventoryAndLossReport(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	statePath := filepath.Join(dir, "state.json")
+	inventoryPath := filepath.Join(dir, "inventory.md")
+	lossPath := filepath.Join(dir, "loss.md")
+	writeTestFile(t, statePath, []byte(`{
+	  "format_version": "1.0",
+	  "terraform_version": "1.15.5",
+	  "values": {
+	    "root_module": {
+	      "resources": [
+	        {
+	          "address": "aws_db_instance.app",
+	          "mode": "managed",
+	          "type": "aws_db_instance",
+	          "name": "app",
+	          "provider_name": "registry.terraform.io/hashicorp/aws",
+	          "values": {"password": "super-secret-password"},
+	          "sensitive_values": {"password": true}
+	        }
+	      ]
+	    }
+	  }
+	}`))
+
+	var stdout bytes.Buffer
+	var stderr bytes.Buffer
+	exitCode := Run(context.Background(), []string{"review", "terraform-state", statePath, "--out", inventoryPath, "--loss-report", lossPath}, &stdout, &stderr)
+
+	if exitCode != ExitOK {
+		t.Fatalf("Run(review terraform-state) exitCode = %d, want %d; stdout=%q stderr=%q", exitCode, ExitOK, stdout.String(), stderr.String())
+	}
+	assertFileContains(t, inventoryPath, "# Terraform State Inventory")
+	assertFileContains(t, inventoryPath, "`aws_db_instance.app`")
+	assertFileContains(t, inventoryPath, "`password`")
+	assertFileContains(t, lossPath, "# Loss Report")
+	for _, path := range []string{inventoryPath, lossPath} {
+		data, err := localfs.ReadRegularFile(path, 1024*1024)
+		if err != nil {
+			t.Fatalf("read %s: %v", path, err)
+		}
+		if strings.Contains(string(data), "super-secret-password") {
+			t.Fatalf("%s leaked sensitive state value: %s", path, data)
+		}
+	}
+}
+
 func TestRunReviewRejectsInvalidUsage(t *testing.T) {
 	t.Parallel()
 

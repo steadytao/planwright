@@ -182,6 +182,7 @@ planwright policy profiles
 planwright policy graph <planwright.graph.json> --profile <profile> --out <policy.md> --sarif <policy.sarif>
 planwright pack <planwright.yaml> --out <dir>
 planwright review terraform-plan <tfplan.json> --out <review.md> --sarif <planwright.sarif>
+planwright review terraform-state <state.json> --out <inventory.md> --loss-report <loss.md>
 planwright serve [project-dir] [--addr 127.0.0.1:5786]
 planwright version
 ```
@@ -218,6 +219,11 @@ Review a Terraform plan JSON fixture:
 go run ./cmd/planwright review terraform-plan examples/terraform-plan-risk-review/tfplan.json --out ./generated/terraform-review.md --sarif ./generated/planwright.sarif
 ```
 
+Review a Terraform state JSON fixture:
+```bash
+go run ./cmd/planwright review terraform-state examples/terraform-state-inventory/state.json --out ./generated/terraform-state.md --loss-report ./generated/terraform-state-loss.md
+```
+
 Start the current local browser workbench:
 ```bash
 go run ./cmd/planwright serve . --addr 127.0.0.1:5786
@@ -225,7 +231,7 @@ go run ./cmd/planwright serve . --addr 127.0.0.1:5786
 
 # CURRENT SCOPE
 
-Planwright is in the v0.13 fixture-backed compatibility stage. The immediate focus is making existing compatibility claims testable before adding more import families, generators or provider support.
+Planwright is in the v0.14 Terraform/OpenTofu state inventory stage. The immediate focus is reading local state JSON safely, producing reviewable inventory evidence and keeping graph lowering, provider schema ingestion and Terraform/OpenTofu execution out of scope until later gates.
 
 Current implemented surfaces:
 - Go CLI
@@ -241,6 +247,7 @@ Current implemented surfaces:
 - rendered Kubernetes manifest import with Gateway API and Cilium inventory support
 - local AWS scan bundle import from selected AWS CLI JSON artefacts
 - Terraform plan JSON review with Markdown and SARIF output
+- Terraform/OpenTofu state JSON inventory with Markdown loss reports
 - local graph JSON diff review
 - built-in `lab`, `small-business` and `production` policy profile review
 - text-and-table local browser workbench through `planwright serve`

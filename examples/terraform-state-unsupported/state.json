@@ -1,0 +1,21 @@
+{
+  "format_version": "1.0",
+  "terraform_version": "1.15.5",
+  "values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "google_compute_instance.app",
+          "mode": "managed",
+          "type": "google_compute_instance",
+          "name": "app",
+          "provider_name": "registry.terraform.io/hashicorp/google",
+          "values": {
+            "name": "app"
+          },
+          "sensitive_values": {}
+        }
+      ]
+    }
+  }
+}
