@@ -523,6 +523,8 @@ Explicitly excluded:
 - invisible compatibility claims in docs
 - retroactive changes to already-published release assets
 
+Status: implemented; final release verification pending.
+
 ## v0.14 Terraform/OpenTofu State JSON Import
 
 Goal: make Terraform/OpenTofu compatibility more than plan-review evidence without taking on provider schema complexity too early.

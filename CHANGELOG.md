@@ -4,10 +4,19 @@ All notable project changes are tracked here. The project is pre-1.0; compatibil
 
 ## Unreleased
 
-These changes are not yet a complete release note.
+No changes yet.
+
+<details>
+<summary><h2>v0.13.0</h2></summary>
+
+`v0.13.0` is the fixture-backed compatibility release. It makes compatibility claims easier to audit before Planwright adds new import families, generators or broader provider support.
 
 ### Added
+- Added a compatibility fixture metadata schema and runner for public command surfaces.
+- Added fixture-backed compatibility matrix checks.
+- Added canonical, unsupported and malformed fixtures across the current local input surfaces.
 - Added release-attached SLSA provenance as `planwright.intoto.jsonl`.
+- Added SARIF fixture output validation for supported SARIF 2.1.0 output.
 
 ### Changed
 - Documented SLSA release provenance verification alongside GitHub artefact attestations and OpenPGP checksum verification.
@@ -15,6 +24,8 @@ These changes are not yet a complete release note.
 - Removed the unpinned SLSA reusable workflow path so third-party GitHub Actions dependencies stay SHA-pinned.
 - Updated the Go toolchain pin to `go1.26.4` for standard-library vulnerability fixes reported by `govulncheck`.
 - Updated GitHub Actions pins to the latest checked SemVer tags.
+
+</details>
 
 <details>
 <summary><h2>v0.12.1</h2></summary>

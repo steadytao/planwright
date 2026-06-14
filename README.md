@@ -186,12 +186,12 @@ planwright serve [project-dir] [--addr 127.0.0.1:5786]
 planwright version
 ```
 
-Planned commands such as `tui`, `scan aws`, `generate kubernetes`, custom policy packs and OPA/Rego policy execution are not part of v0.11.
+Planned commands such as `tui`, `scan aws`, `generate kubernetes`, custom policy packs and OPA/Rego policy execution are not part of the current implementation.
 
 # EXAMPLES
 
 Canonical walkthrough:
-- [examples/aws-webapp-basic/README.md](examples/aws-webapp-basic/README.md), the current v0.12 proof path
+- [examples/aws-webapp-basic/README.md](examples/aws-webapp-basic/README.md), the canonical proof path covered by compatibility fixtures
 
 Validate the example plan:
 ```bash
@@ -225,7 +225,7 @@ go run ./cmd/planwright serve . --addr 127.0.0.1:5786
 
 # CURRENT SCOPE
 
-Planwright is in the v0.12 usability and proof stage. The immediate focus is making the existing engine easy to understand, run and review through one polished proof path rather than expanding the feature surface.
+Planwright is in the v0.13 fixture-backed compatibility stage. The immediate focus is making existing compatibility claims testable before adding more import families, generators or provider support.
 
 Current implemented surfaces:
 - Go CLI

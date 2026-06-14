@@ -34,9 +34,9 @@ If this file appears to conflict with those documents, follow the canonical docu
 
 ## Project Stage
 
-Planwright is in the v0.12 usability and proof stage after the first planned public release.
+Planwright is in the v0.13 fixture-backed compatibility stage.
 
-The next high-value work is to make the existing engine easy to understand, run and review through one polished proof path. Do not add broad features merely because they appear in the long-term roadmap.
+The next high-value work is to make the existing compatibility matrix auditable through fixtures, release evidence and honest documentation before adding broader Terraform/OpenTofu, provider or generator surface area. Do not add broad features merely because they appear in the long-term roadmap.
 
 Be especially careful not to:
 - write documentation as if stable releases already exist
@@ -51,7 +51,7 @@ Be especially careful not to:
 - imply that CI proves security, correctness, deployability or documentation quality beyond the checks that actually run
 - imply that generated Terraform/OpenTofu output has been executed, validated by Terraform or proven deployable unless fresh evidence proves it
 - imply that the local web UI deploys, writes project files from browser actions, reads credentials or contacts cloud APIs
-- imply that the v0.12 proof work broadens compatibility beyond existing fixture-backed support
+- imply that v0.13 fixture work broadens compatibility beyond existing checked support
 - claim security, compliance, cost or deployability guarantees beyond current diagnostics
 - describe conversion as lossless unless a fixture proves the exact round trip
 
