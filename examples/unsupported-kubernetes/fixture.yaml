@@ -1,0 +1,23 @@
+schema: planwright.fixture.v1
+id: unsupported-kubernetes
+name: Unsupported Kubernetes resource fixture
+source_format: kubernetes.yaml
+source_path: manifests.yaml
+compatibility_level: 4
+expected_loss_categories:
+  - unsupported
+commands:
+  - name: import unsupported Kubernetes resource
+    args: ["import", "k8s", "${source}", "--out", "${temp}/kubernetes.graph.json", "--loss-report", "${temp}/kubernetes-loss.md"]
+    want_exit: 0
+    want_stdout_contains:
+      - imported k8s manifests to
+      - wrote loss report to
+    want_files:
+      - "${temp}/kubernetes.graph.json"
+      - "${temp}/kubernetes-loss.md"
+    want_file_contains:
+      - path: "${temp}/kubernetes-loss.md"
+        contains:
+          - "## Unsupported"
+          - "example.io/v1/FutureDatabase"

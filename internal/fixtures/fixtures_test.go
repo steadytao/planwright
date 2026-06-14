@@ -227,6 +227,12 @@ func TestCommandExpectationExpandsPaths(t *testing.T) {
 	command := CommandExpectation{
 		Args:      []string{"generate", "terraform", "${source}", "--out", "${temp}/terraform"},
 		WantFiles: []string{"${temp}/terraform/versions.tf"},
+		WantFileContains: []FileContentExpectation{
+			{
+				Path:     "${temp}/terraform/README.md",
+				Contains: []string{"Terraform"},
+			},
+		},
 	}
 
 	args := command.ExpandArgs(fixture, filepath.Join("tmp", "out"))
@@ -239,6 +245,40 @@ func TestCommandExpectationExpandsPaths(t *testing.T) {
 	files := command.ExpectedFiles(filepath.Join("tmp", "out"))
 	if got, want := files[0], filepath.Join("tmp", "out", "terraform", "versions.tf"); got != want {
 		t.Fatalf("expanded expected file = %q, want %q", got, want)
+	}
+	contents := command.ExpectedFileContents(filepath.Join("tmp", "out"))
+	if got, want := contents[0].Path, filepath.Join("tmp", "out", "terraform", "README.md"); got != want {
+		t.Fatalf("expanded expected file content path = %q, want %q", got, want)
+	}
+}
+
+func TestLoadFileRejectsEmptyFileContentExpectation(t *testing.T) {
+	t.Parallel()
+
+	dir := t.TempDir()
+	writeFixtureTestFile(t, filepath.Join(dir, "planwright.yaml"), []byte("version: planwright.v1\n"))
+	writeFixtureTestFile(t, filepath.Join(dir, "fixture.yaml"), []byte(`
+schema: planwright.fixture.v1
+id: bad-file-content
+name: Bad file content fixture
+source_format: planwright.yaml
+source_path: planwright.yaml
+compatibility_level: 1
+commands:
+  - name: validate
+    args: ["validate", "${source}"]
+    want_exit: 0
+    want_file_contains:
+      - path: "${temp}/report.md"
+        contains: []
+`))
+
+	_, err := LoadFile(filepath.Join(dir, "fixture.yaml"))
+	if err == nil {
+		t.Fatalf("LoadFile(empty file content expectation) error = nil, want error")
+	}
+	if !strings.Contains(err.Error(), "contains must not be empty") {
+		t.Fatalf("LoadFile(empty file content expectation) error = %v, want contains refusal", err)
 	}
 }
 

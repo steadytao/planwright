@@ -1,0 +1,7 @@
+apiVersion: example.io/v1
+kind: FutureDatabase
+metadata:
+  name: future-db
+  namespace: demo
+spec:
+  engine: postgres

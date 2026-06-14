@@ -75,6 +75,9 @@ Command expectations may check:
 - required stdout text
 - required stderr text
 - generated files under `${temp}`
+- required text inside generated files under `${temp}`
+
+Use `want_file_contains` when the compatibility claim depends on generated report text, such as proving that a loss report names an unsupported resource.
 
 Fixtures should test public command surfaces rather than internal helper functions wherever practical. Internal unit tests should still cover parser, graph and report edge cases directly.
 
