@@ -53,6 +53,7 @@ type CommandExpectation struct {
 	WantStdoutContains []string                 `yaml:"want_stdout_contains"`
 	WantStderrContains []string                 `yaml:"want_stderr_contains"`
 	WantFiles          []string                 `yaml:"want_files"`
+	WantSARIFFiles     []string                 `yaml:"want_sarif_files"`
 	WantFileContains   []FileContentExpectation `yaml:"want_file_contains"`
 }
 
@@ -190,6 +191,15 @@ func (command CommandExpectation) ExpectedFiles(tempDir string) []string {
 	return files
 }
 
+func (command CommandExpectation) ExpectedSARIFFiles(tempDir string) []string {
+	files := make([]string, 0, len(command.WantSARIFFiles))
+	for _, path := range command.WantSARIFFiles {
+		expanded := strings.ReplaceAll(path, "${temp}", tempDir)
+		files = append(files, filepath.Clean(filepath.FromSlash(expanded)))
+	}
+	return files
+}
+
 func (command CommandExpectation) ExpectedFileContents(tempDir string) []FileContentExpectation {
 	expectations := make([]FileContentExpectation, 0, len(command.WantFileContains))
 	for _, expectation := range command.WantFileContains {
@@ -211,6 +221,11 @@ func (command CommandExpectation) validate(index int) []error {
 	}
 	for _, path := range command.WantFiles {
 		if err := validateTemplatePath(prefix+".want_files", path); err != nil {
+			errs = append(errs, err)
+		}
+	}
+	for _, path := range command.WantSARIFFiles {
+		if err := validateTemplatePath(prefix+".want_sarif_files", path); err != nil {
 			errs = append(errs, err)
 		}
 	}

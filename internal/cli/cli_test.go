@@ -15,6 +15,7 @@ import (
 
 	"github.com/steadytao/planwright/internal/fixtures"
 	"github.com/steadytao/planwright/internal/localfs"
+	"github.com/steadytao/planwright/internal/reports"
 )
 
 func TestRunVersion(t *testing.T) {
@@ -610,6 +611,15 @@ func TestRunExampleCompatibilityFixtures(t *testing.T) {
 				for _, path := range command.ExpectedFiles(tempDir) {
 					if _, err := os.Stat(path); err != nil {
 						t.Fatalf("Run(%s/%s) expected file %s missing: %v", fixture.ID, command.Name, path, err)
+					}
+				}
+				for _, path := range command.ExpectedSARIFFiles(tempDir) {
+					data, err := localfs.ReadRegularFile(path, 10*1024*1024)
+					if err != nil {
+						t.Fatalf("Run(%s/%s) expected SARIF file %s unreadable: %v", fixture.ID, command.Name, path, err)
+					}
+					if err := reports.ValidateSARIF(data, path); err != nil {
+						t.Fatalf("Run(%s/%s) expected SARIF file %s invalid: %v", fixture.ID, command.Name, path, err)
 					}
 				}
 				for _, expectation := range command.ExpectedFileContents(tempDir) {

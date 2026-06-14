@@ -227,6 +227,9 @@ func TestCommandExpectationExpandsPaths(t *testing.T) {
 	command := CommandExpectation{
 		Args:      []string{"generate", "terraform", "${source}", "--out", "${temp}/terraform"},
 		WantFiles: []string{"${temp}/terraform/versions.tf"},
+		WantSARIFFiles: []string{
+			"${temp}/terraform/planwright.sarif",
+		},
 		WantFileContains: []FileContentExpectation{
 			{
 				Path:     "${temp}/terraform/README.md",
@@ -249,6 +252,10 @@ func TestCommandExpectationExpandsPaths(t *testing.T) {
 	contents := command.ExpectedFileContents(filepath.Join("tmp", "out"))
 	if got, want := contents[0].Path, filepath.Join("tmp", "out", "terraform", "README.md"); got != want {
 		t.Fatalf("expanded expected file content path = %q, want %q", got, want)
+	}
+	sarifFiles := command.ExpectedSARIFFiles(filepath.Join("tmp", "out"))
+	if got, want := sarifFiles[0], filepath.Join("tmp", "out", "terraform", "planwright.sarif"); got != want {
+		t.Fatalf("expanded expected SARIF file = %q, want %q", got, want)
 	}
 }
 

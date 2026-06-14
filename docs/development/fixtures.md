@@ -75,9 +75,12 @@ Command expectations may check:
 - required stdout text
 - required stderr text
 - generated files under `${temp}`
+- generated SARIF files under `${temp}`
 - required text inside generated files under `${temp}`
 
 Use `want_file_contains` when the compatibility claim depends on generated report text, such as proving that a loss report names an unsupported resource.
+
+Use `want_sarif_files` when a fixture command emits SARIF. The fixture runner parses each listed file and validates it against Planwright's supported SARIF 2.1.0 subset.
 
 Fixtures should test public command surfaces rather than internal helper functions wherever practical. Internal unit tests should still cover parser, graph and report edge cases directly.
 
