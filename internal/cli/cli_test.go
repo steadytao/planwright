@@ -612,6 +612,17 @@ func TestRunExampleCompatibilityFixtures(t *testing.T) {
 						t.Fatalf("Run(%s/%s) expected file %s missing: %v", fixture.ID, command.Name, path, err)
 					}
 				}
+				for _, expectation := range command.ExpectedFileContents(tempDir) {
+					data, err := localfs.ReadRegularFile(expectation.Path, 1024*1024)
+					if err != nil {
+						t.Fatalf("Run(%s/%s) expected file %s unreadable: %v", fixture.ID, command.Name, expectation.Path, err)
+					}
+					for _, want := range expectation.Contains {
+						if !strings.Contains(string(data), want) {
+							t.Fatalf("Run(%s/%s) file %s = %q, want %q", fixture.ID, command.Name, expectation.Path, string(data), want)
+						}
+					}
+				}
 			}
 		})
 	}

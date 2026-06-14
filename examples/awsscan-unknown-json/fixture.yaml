@@ -1,0 +1,24 @@
+schema: planwright.fixture.v1
+id: awsscan-unknown-json
+name: AWS scan unknown JSON preservation fixture
+source_format: awsscan.bundle
+source_kind: directory
+source_path: .
+compatibility_level: 4
+expected_loss_categories:
+  - preserved
+commands:
+  - name: import AWS scan bundle with unknown JSON
+    args: ["import", "awsscan", "${source}", "--out", "${temp}/awsscan.graph.json", "--loss-report", "${temp}/awsscan-loss.md"]
+    want_exit: 0
+    want_stdout_contains:
+      - imported AWS scan bundle to
+      - wrote loss report to
+    want_files:
+      - "${temp}/awsscan.graph.json"
+      - "${temp}/awsscan-loss.md"
+    want_file_contains:
+      - path: "${temp}/awsscan-loss.md"
+        contains:
+          - "## Preserved"
+          - "future-service.json"

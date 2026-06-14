@@ -1,0 +1,23 @@
+schema: planwright.fixture.v1
+id: unsupported-sam
+name: Unsupported SAM resource fixture
+source_format: sam
+source_path: template.yaml
+compatibility_level: 4
+expected_loss_categories:
+  - unsupported
+commands:
+  - name: import unsupported SAM resource
+    args: ["import", "sam", "${source}", "--out", "${temp}/sam.graph.json", "--loss-report", "${temp}/sam-loss.md"]
+    want_exit: 0
+    want_stdout_contains:
+      - imported sam template to
+      - wrote loss report to
+    want_files:
+      - "${temp}/sam.graph.json"
+      - "${temp}/sam-loss.md"
+    want_file_contains:
+      - path: "${temp}/sam-loss.md"
+        contains:
+          - "## Unsupported"
+          - "AWS::Serverless::StateMachine"

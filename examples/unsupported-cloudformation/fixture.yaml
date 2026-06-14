@@ -1,0 +1,23 @@
+schema: planwright.fixture.v1
+id: unsupported-cloudformation
+name: Unsupported CloudFormation resource fixture
+source_format: cloudformation
+source_path: template.yaml
+compatibility_level: 4
+expected_loss_categories:
+  - unsupported
+commands:
+  - name: import unsupported CloudFormation resource
+    args: ["import", "cloudformation", "${source}", "--out", "${temp}/cloudformation.graph.json", "--loss-report", "${temp}/cloudformation-loss.md"]
+    want_exit: 0
+    want_stdout_contains:
+      - imported cloudformation template to
+      - wrote loss report to
+    want_files:
+      - "${temp}/cloudformation.graph.json"
+      - "${temp}/cloudformation-loss.md"
+    want_file_contains:
+      - path: "${temp}/cloudformation-loss.md"
+        contains:
+          - "## Unsupported"
+          - "AWS::CloudFront::Distribution"

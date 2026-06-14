@@ -47,12 +47,18 @@ type Fixture struct {
 }
 
 type CommandExpectation struct {
-	Name               string   `yaml:"name"`
-	Args               []string `yaml:"args"`
-	WantExit           int      `yaml:"want_exit"`
-	WantStdoutContains []string `yaml:"want_stdout_contains"`
-	WantStderrContains []string `yaml:"want_stderr_contains"`
-	WantFiles          []string `yaml:"want_files"`
+	Name               string                   `yaml:"name"`
+	Args               []string                 `yaml:"args"`
+	WantExit           int                      `yaml:"want_exit"`
+	WantStdoutContains []string                 `yaml:"want_stdout_contains"`
+	WantStderrContains []string                 `yaml:"want_stderr_contains"`
+	WantFiles          []string                 `yaml:"want_files"`
+	WantFileContains   []FileContentExpectation `yaml:"want_file_contains"`
+}
+
+type FileContentExpectation struct {
+	Path     string   `yaml:"path"`
+	Contains []string `yaml:"contains"`
 }
 
 func Discover(root string) ([]Fixture, error) {
@@ -184,6 +190,16 @@ func (command CommandExpectation) ExpectedFiles(tempDir string) []string {
 	return files
 }
 
+func (command CommandExpectation) ExpectedFileContents(tempDir string) []FileContentExpectation {
+	expectations := make([]FileContentExpectation, 0, len(command.WantFileContains))
+	for _, expectation := range command.WantFileContains {
+		expanded := strings.ReplaceAll(expectation.Path, "${temp}", tempDir)
+		expectation.Path = filepath.Clean(filepath.FromSlash(expanded))
+		expectations = append(expectations, expectation)
+	}
+	return expectations
+}
+
 func (command CommandExpectation) validate(index int) []error {
 	var errs []error
 	prefix := fmt.Sprintf("commands[%d]", index)
@@ -196,6 +212,20 @@ func (command CommandExpectation) validate(index int) []error {
 	for _, path := range command.WantFiles {
 		if err := validateTemplatePath(prefix+".want_files", path); err != nil {
 			errs = append(errs, err)
+		}
+	}
+	for itemIndex, expectation := range command.WantFileContains {
+		itemPrefix := fmt.Sprintf("%s.want_file_contains[%d]", prefix, itemIndex)
+		if err := validateTemplatePath(itemPrefix+".path", expectation.Path); err != nil {
+			errs = append(errs, err)
+		}
+		if len(expectation.Contains) == 0 {
+			errs = append(errs, fmt.Errorf("%s.contains must not be empty", itemPrefix))
+		}
+		for containsIndex, contains := range expectation.Contains {
+			if strings.TrimSpace(contains) == "" {
+				errs = append(errs, fmt.Errorf("%s.contains[%d] must not be empty", itemPrefix, containsIndex))
+			}
 		}
 	}
 	return errs
