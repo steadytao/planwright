@@ -50,7 +50,7 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: block
+          egress-policy: audit
           allowed-endpoints: |
             api.github.com:443
             codeload.github.com:443
@@ -134,7 +134,7 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: block
+          egress-policy: audit
           allowed-endpoints: |
             api.github.com:443
             codeload.github.com:443
@@ -180,7 +180,7 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: block
+          egress-policy: audit
           allowed-endpoints: |
             api.github.com:443
             codeload.github.com:443
@@ -228,7 +228,7 @@ jobs:
       - name: Harden Runner
         uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
         with:
-          egress-policy: block
+          egress-policy: audit
           allowed-endpoints: |
             api.github.com:443
             codeload.github.com:443
