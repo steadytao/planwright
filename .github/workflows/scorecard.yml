@@ -24,7 +24,6 @@ jobs:
         with:
           egress-policy: block
           allowed-endpoints: |
-            168.63.129.16:53
             api.github.com:443
             api.scorecard.dev:443
             codeload.github.com:443
