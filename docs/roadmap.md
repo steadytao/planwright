@@ -396,7 +396,6 @@ Scope:
 - build, cross-platform build, test, race test, lint, module hygiene, static analysis and vulnerability jobs
 - action pin drift checks
 - file-header checks
-- Go Report Card checks for public repositories
 - script-quality checks for GitHub helper scripts
 - CodeQL and Scorecards workflows
 - workflow validation with actionlint

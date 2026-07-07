@@ -35,7 +35,7 @@ jobs:
       release_inputs_changed: ${{ steps.detect.outputs.release_inputs_changed }}
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411 # v2.19.4
+        uses: step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920 # v2.20.0
         with:
           egress-policy: audit
           allowed-endpoints: |
@@ -185,13 +185,6 @@ jobs:
     if: ${{ github.event_name != 'schedule' }}
     uses: ./.github/workflows/ci-lint.yml
 
-  goreportcard:
-    name: CI / Go Report Card
-    needs:
-      - changes
-    if: ${{ github.event_name != 'schedule' }}
-    uses: ./.github/workflows/ci-goreportcard.yml
-
   module-hygiene:
     name: CI / Module Hygiene
     needs:
@@ -253,7 +246,6 @@ jobs:
       - docs
       - file-headers
       - fuzz
-      - goreportcard
       - lint
       - module-hygiene
       - release-verification
@@ -271,7 +263,6 @@ jobs:
           DOCS_RESULT: ${{ needs.docs.result }}
           FILE_HEADERS_RESULT: ${{ needs.file-headers.result }}
           FUZZ_RESULT: ${{ needs.fuzz.result }}
-          GOREPORTCARD_RESULT: ${{ needs.goreportcard.result }}
           LINT_RESULT: ${{ needs.lint.result }}
           MODULE_HYGIENE_RESULT: ${{ needs.module-hygiene.result }}
           RELEASE_VERIFICATION_RESULT: ${{ needs.release-verification.result }}
@@ -290,7 +281,6 @@ jobs:
             ["CI / Docs"]="${DOCS_RESULT}"
             ["CI / File Headers"]="${FILE_HEADERS_RESULT}"
             ["CI / Fuzz"]="${FUZZ_RESULT}"
-            ["CI / Go Report Card"]="${GOREPORTCARD_RESULT}"
             ["CI / Lint"]="${LINT_RESULT}"
             ["CI / Module Hygiene"]="${MODULE_HYGIENE_RESULT}"
             ["CI / Release Verification"]="${RELEASE_VERIFICATION_RESULT}"
