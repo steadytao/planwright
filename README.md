@@ -1,41 +1,5 @@
-<div align="center">
-
-[![Planwright](./.github/banner.svg)](#readme)
-
-[![Release version](https://img.shields.io/badge/Download-latest-2064FC.svg?style=for-the-badge&labelColor=031835)](#installation "Installation")
-[![Sponsor](https://img.shields.io/badge/_-Sponsor-495977.svg?logo=githubsponsors&logoColor=white&labelColor=031835&style=for-the-badge)](https://github.com/sponsors/steadytao "Sponsor")
-[![License: Apache 2.0](https://img.shields.io/badge/-Apache_2.0-2064FC.svg?style=for-the-badge&labelColor=031835)](LICENSE "Licence")
-[![CI Status](https://img.shields.io/github/actions/workflow/status/steadytao/planwright/ci-main.yml?branch=main&label=Tests&style=for-the-badge&labelColor=031835)](https://github.com/steadytao/planwright/actions/workflows/ci-main.yml "CI Status")
-[![OpenSSF Best Practices](https://img.shields.io/badge/OpenSSF_Best_Practices-passing-brightgreen.svg?style=for-the-badge&labelColor=031835)](https://www.bestpractices.dev/en/projects/13072 "OpenSSF Best Practices")
-[![OpenSSF Scorecard](https://img.shields.io/ossf-scorecard/github.com/steadytao/planwright?label=Scorecard&style=for-the-badge&labelColor=031835&color=brightgreen)](https://scorecard.dev/viewer/?uri=github.com/steadytao/planwright "OpenSSF Scorecard")
-[![Commits](https://img.shields.io/github/commit-activity/m/steadytao/planwright?label=commits&style=for-the-badge&labelColor=031835)](https://github.com/steadytao/planwright/commits "Commit History")
-
-</div>
-
-Planwright is a local-first infrastructure planning engine. It turns typed plans and selected infrastructure-as-code artefacts into a reviewable architecture graph then generates evidence: validation results, security notes, cost notes, loss reports, diagrams and deployment packs.
-
-Planwright treats infrastructure conversion as a migration and evidence problem, not a syntax conversion problem.
-- [INSTALLATION](#installation)
-- [Release Files](#release-files)
-- [Update](#update)
-- [Dependencies](#dependencies)
-- [Compile](#compile)
-- [Quick Proof Path](#quick-proof-path)
-- [Usage and Options](#usage-and-options)
-- [Examples](#examples)
-- [What Planwright Is Not](#what-planwright-is-not)
-- [Current Scope](#current-scope)
-- [Compatibility](#compatibility)
-- [Safety Boundaries](#safety-boundaries)
-- [Documentation](#documentation)
-- [Development](#development)
-- [Contributing](#contributing)
-- [Governance](#governance)
-- [Support](#support)
-- [Security](#security)
-- [Sponsoring](#sponsoring)
-- [Licence](#licence)
-- [Changelog](#changelog)
+> [!IMPORTANT]
+> Archived 2nd of August, 2026 - Planwright was a valuable learning experience but it is no longer maintained. My future work is focused on cyber security, threat intelligence and related infrastructure.
 
 # INSTALLATION
 
